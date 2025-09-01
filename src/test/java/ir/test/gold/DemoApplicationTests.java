@@ -1,4 +1,4 @@
-package gold.example.demo;
+package ir.test.gold;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

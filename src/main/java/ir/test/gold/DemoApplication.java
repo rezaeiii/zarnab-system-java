@@ -1,4 +1,4 @@
-package gold.example.demo;
+package ir.test.gold;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
