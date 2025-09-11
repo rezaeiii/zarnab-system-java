@@ -4,20 +4,24 @@ import com.zarnab.panel.auth.dto.LoginResult;
 import com.zarnab.panel.auth.dto.VerifyOtpResult;
 import com.zarnab.panel.auth.dto.req.InitiateLoginRequest;
 import com.zarnab.panel.auth.dto.req.RegisterRequest;
+import com.zarnab.panel.auth.model.NaturalPersonProfileEmbeddable;
 import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.auth.model.UserProfileType;
 import com.zarnab.panel.auth.repository.UserRepository;
 import com.zarnab.panel.auth.service.otp.OtpService;
 import com.zarnab.panel.auth.service.ratelimit.RateLimiter;
 import com.zarnab.panel.auth.service.token.TokenStore;
+import com.zarnab.panel.common.file.service.FileStorageService;
 import com.zarnab.panel.core.security.JwtService;
+import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +37,7 @@ public class AuthServiceImpl implements AuthService {
     private final OtpService otpService;
     private final TokenStore registrationTokenStore;
     private final RateLimiter rateLimiter;
+    private final FileStorageService fileStorageService;
 
     @Value("${zarnab.security.jwt.registration-token-expiration-ms}")
     private long regTokenExpiration;
@@ -57,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public LoginResult registerUser(RegisterRequest request) {
+    public LoginResult registerUser(RegisterRequest request, MultipartFile nationalIdImage) {
         String regTokenKey = REG_TOKEN_KEY_PREFIX + request.registrationToken();
         String mobileNumber = registrationTokenStore.consume(regTokenKey)
                 .orElseThrow(() -> new BadCredentialsException("Invalid or expired registration token."));
@@ -66,10 +71,21 @@ public class AuthServiceImpl implements AuthService {
             throw new UsernameNotFoundException("User with this mobile number already exists.");
         }
 
+        // upload image
+        ObjectWriteResponse imageObject = fileStorageService.uploadFile(nationalIdImage);
+
         User newUser = User.builder()
                 .mobileNumber(mobileNumber)
                 .enabled(true)
                 .roles(Set.of(Role.USER, Role.REPRESENTATIVE))
+                .profileType(UserProfileType.NATURAL)
+                .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
+                        .firstName(request.firstName())
+                        .lastName(request.lastName())
+                        .nationalId(request.nationalId())
+                        .nationalCardImageUrl(imageObject.object())
+
+                        .build())
                 // Profile mapping would happen here from request.firstName(), etc.
                 .build();
         userRepository.save(newUser);

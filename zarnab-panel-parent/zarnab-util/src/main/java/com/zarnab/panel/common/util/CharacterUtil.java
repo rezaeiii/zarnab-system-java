@@ -3,7 +3,7 @@ package com.zarnab.panel.common.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LanguageUtil {
+public class CharacterUtil {
 
     public static Boolean hasArabicCharacter(String input) {
         if(input == null){

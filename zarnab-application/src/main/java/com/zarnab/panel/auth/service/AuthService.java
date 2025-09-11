@@ -4,6 +4,7 @@ import com.zarnab.panel.auth.dto.LoginResult;
 import com.zarnab.panel.auth.dto.VerifyOtpResult;
 import com.zarnab.panel.auth.dto.req.InitiateLoginRequest;
 import com.zarnab.panel.auth.dto.req.RegisterRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Main application service for handling the user authentication and registration business logic.
@@ -15,6 +16,6 @@ public interface AuthService {
 
     VerifyOtpResult verifyOtp(String mobileNumber, String otp);
 
-    LoginResult registerUser(RegisterRequest request);
+    LoginResult registerUser(RegisterRequest request, MultipartFile nationalIdImage);
 }
 

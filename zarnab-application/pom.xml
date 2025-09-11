@@ -26,6 +26,10 @@
             <groupId>com.zarnab.panel</groupId>
             <artifactId>zarnab-util</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.zarnab.panel</groupId>
+            <artifactId>zarnab-minio</artifactId>
+        </dependency>
 
         <!-- Spring Boot Starters -->
         <dependency>
@@ -125,10 +129,10 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <!-- Maven Compiler Plugin configured in parent -->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-compiler-plugin</artifactId>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.apache.maven.plugins</groupId>-->
+            <!--                <artifactId>maven-compiler-plugin</artifactId>-->
+            <!--            </plugin>-->
         </plugins>
     </build>
 

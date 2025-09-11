@@ -9,20 +9,22 @@ import com.zarnab.panel.auth.dto.res.LoginResponse;
 import com.zarnab.panel.auth.dto.res.VerifyOtpResponse;
 import com.zarnab.panel.auth.service.AuthService;
 import com.zarnab.panel.auth.util.CookieHelper;
+import com.zarnab.panel.common.annotation.fileValidator.FileConstraint;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Web layer entry point for user authentication and registration flows.
  * This controller is responsible for handling HTTP requests, delegating to the AuthService,
  * and mapping service-layer results to HTTP responses.
  */
+@Validated
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -63,9 +65,17 @@ public class AuthController {
     /**
      * Step 3: Registers a new user and logs them in.
      */
-    @PostMapping("/register")
-    public ResponseEntity<VerifyOtpResponse> register(@Valid @RequestBody RegisterRequest request) {
-        LoginResult loginResult = authService.registerUser(request);
+    @PostMapping(value = "/register", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<VerifyOtpResponse> register(
+            @FileConstraint(maxFiles = 1) @RequestPart(name = "nationalIdImage", required = false) MultipartFile nationalIdImage,
+//            @Valid @RequestPart RegisterRequest request
+            @RequestParam("nationalId") String nationalId,
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("registrationToken") String registrationToken
+    ) {
+        RegisterRequest request = new RegisterRequest(registrationToken, firstName, lastName, nationalId);
+        LoginResult loginResult = authService.registerUser(request, nationalIdImage);
         return buildLoginSuccessResponse(loginResult);
     }
 

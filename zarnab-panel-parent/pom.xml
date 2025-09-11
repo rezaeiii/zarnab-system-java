@@ -19,6 +19,7 @@
     <modules>
         <module>zarnab-util</module>
         <module>zarnab-translate</module>
+        <module>zarnab-minio</module>
         <module>../zarnab-application</module>
     </modules>
 
@@ -32,6 +33,7 @@
         <bardframework.version>3.9.17</bardframework.version>
         <jib.version>3.4.1</jib.version>
         <jib.build.skip>true</jib.build.skip>
+        <minio.version>8.5.17</minio.version>
     </properties>
 
     <dependencyManagement>
@@ -57,6 +59,11 @@
                 <artifactId>zarnab-translate</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.zarnab.panel</groupId>
+                <artifactId>zarnab-minio</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 
             <!-- MapStruct -->
@@ -78,6 +85,13 @@
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc-openapi.version}</version>
+            </dependency>
+
+            <!-- Minio -->
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
             </dependency>
 
             <!-- JWT Library -->
