@@ -2,6 +2,7 @@ package com.zarnab.panel.auth.config;
 
 import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.auth.model.UserProfileType;
 import com.zarnab.panel.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +13,10 @@ import org.springframework.context.annotation.Profile;
 
 import java.util.Set;
 
-@Configuration
-@Profile("dev")
-@RequiredArgsConstructor
 @Slf4j
+@Configuration
+@RequiredArgsConstructor
+@Profile(value = {"dev", "docker"})
 public class DataInitializer {
 
     private final UserRepository userRepository;
@@ -27,6 +28,7 @@ public class DataInitializer {
                 log.info("Seeding database with sample users for development profile...");
                 userRepository.save(User.builder()
                         .mobileNumber("+11111111111")
+                        .profileType(UserProfileType.NATURAL)
                         .enabled(true)
                         .roles(Set.of(Role.ADMIN, Role.USER, Role.REPRESENTATIVE))
                         .build());
@@ -34,6 +36,7 @@ public class DataInitializer {
                 userRepository.save(User.builder()
                         .mobileNumber("+22222222222")
                         .enabled(true)
+                        .profileType(UserProfileType.NATURAL)
                         .roles(Set.of(Role.USER, Role.COUNTER))
                         .build());
                 log.info("Database seeding complete.");

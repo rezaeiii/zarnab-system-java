@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@Profile("dev") // This bean will only be created when the 'dev' profile is active
+@Profile(value = {"dev", "docker"}) // This bean will only be created when the 'dev' profile is active
 public class ConsoleSmsService implements SmsService {
 
     @Override

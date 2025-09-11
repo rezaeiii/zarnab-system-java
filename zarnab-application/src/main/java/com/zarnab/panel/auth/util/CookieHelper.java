@@ -6,6 +6,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A helper component to encapsulate the logic for creating secure, HttpOnly cookies.
@@ -27,8 +28,8 @@ public class CookieHelper {
      * @return The HttpHeaders object containing the Set-Cookie header.
      */
     public HttpHeaders createRefreshTokenCookie(String refreshToken) {
-
-        boolean isDevProfile = Arrays.asList(activeProfiles).contains("dev");
+        List<String> devs = Arrays.asList("dev", "docker-dev");
+        boolean isDevProfile = Arrays.stream(activeProfiles).anyMatch(devs::contains);
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)

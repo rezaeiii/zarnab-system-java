@@ -125,10 +125,10 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <!-- Maven Compiler Plugin configured in parent -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-compiler-plugin</artifactId>-->
+<!--            </plugin>-->
         </plugins>
     </build>
 
