@@ -46,7 +46,11 @@ public class RedisOtpService implements OtpService {
         // Atomically set the cooldown key. If it's already present, storeIfAbsent returns false.
         boolean canSend = tokenStore.storeIfAbsent(cooldownKey, "active", cooldownSeconds, TimeUnit.SECONDS);
         if (!canSend) {
-            throw new ZarnabException(ExceptionType.TOO_MANY_REQUESTS);
+            // If the cooldown key is still active, fetch its remaining time.
+            long remainingSeconds = tokenStore.getExpirationTime(cooldownKey, TimeUnit.SECONDS)
+                    .orElse(cooldownSeconds); // Fallback to the full duration if key expired just now.
+
+            throw new ZarnabException(ExceptionType.TOO_MANY_REQUESTS, remainingSeconds);
         }
 
         String otp = otpGenerator.generate();
@@ -62,7 +66,7 @@ public class RedisOtpService implements OtpService {
      * If verification is successful, the OTP key is consumed (deleted).
      *
      * @param mobileNumber The mobile number to verify.
-     * @param otp The OTP provided by the user.
+     * @param otp          The OTP provided by the user.
      * @throws BadCredentialsException if the OTP is invalid, expired, or not found.
      */
     @Override

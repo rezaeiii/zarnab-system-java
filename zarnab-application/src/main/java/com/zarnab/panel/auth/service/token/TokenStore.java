@@ -30,4 +30,14 @@ public interface TokenStore {
      * Retrieves and deletes a value atomically.
      */
     Optional<String> consume(String key);
+
+
+    /**
+     * Gets the remaining expiration time for a key.
+     *
+     * @param key The key to check.
+     * @param unit The time unit for the returned value.
+     * @return The remaining time, or an empty Optional if the key does not exist or has no expiration.
+     */
+    Optional<Long> getExpirationTime(String key, TimeUnit unit);
 }

@@ -13,8 +13,8 @@ import jakarta.validation.constraints.Pattern;
  */
 public record InitiateLoginRequest(
         @NotBlank
-        @Schema(example = "+989123456789")
-        @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Mobile number must be in E.164 format (e.g., +989123456789).")
+        @Schema(example = "09999999999")
+        @Pattern(regexp = "^09\\d{9}$", message = "Mobile number must be in E.164 format (e.g., 09123456789).")
         String mobileNumber
 ) {
 }

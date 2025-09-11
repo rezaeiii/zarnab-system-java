@@ -38,4 +38,15 @@ public class RedisTokenStore implements TokenStore {
         String value = redisTemplate.opsForValue().getAndDelete(key);
         return Optional.ofNullable(value);
     }
+
+    @Override
+    public Optional<Long> getExpirationTime(String key, TimeUnit unit) {
+        Long timeLeft = redisTemplate.getExpire(key, unit);
+        // getExpire returns -2 if key doesn't exist, -1 if it has no expiration.
+        // We only want to return a positive value.
+        if (timeLeft > 0) {
+            return Optional.of(timeLeft);
+        }
+        return Optional.empty();
+    }
 }
