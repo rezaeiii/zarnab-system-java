@@ -1,9 +1,12 @@
 package com.zarnab.panel.auth.service.otp;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
 import java.security.SecureRandom;
 
 @Component
+@Profile("prod")
 public class NumericOtpGenerator implements OtpGenerator {
 
     private static final SecureRandom random = new SecureRandom();
