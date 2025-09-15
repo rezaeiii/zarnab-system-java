@@ -8,7 +8,6 @@ import io.micrometer.tracing.Tracer;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -100,8 +99,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetailDto> handleAllUncaughtExceptions(Exception ex, HttpServletRequest request) {
-        log.error("An unexpected and unhandled error occurred", ex);
-        String detail = Translator.translate(ExceptionType.INTERNAL_SERVER_ERROR.getMessageKey());
+//        log.error("An unexpected and unhandled error occurred", ex);
+//        String detail = Translator.translate(ExceptionType.INTERNAL_SERVER_ERROR.getMessageKey());
+        String detail = ex.getLocalizedMessage();
         return buildProblemDetail(ExceptionType.INTERNAL_SERVER_ERROR, detail, request, ex, null);
     }
 

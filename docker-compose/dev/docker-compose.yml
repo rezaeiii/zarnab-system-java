@@ -56,7 +56,7 @@ services:
       retries: 3
 
   app:
-    build: .
+    build: ../../zarnab-application
     container_name: zarnab_app
     ports:
       - "8080:8080"

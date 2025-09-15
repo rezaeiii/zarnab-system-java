@@ -15,7 +15,7 @@ public record VerifyOtpResponse(
                 requiredMode = Schema.RequiredMode.REQUIRED)
         Status status,
 
-        @Schema(description = "xxxxx")
+        @Schema(description = "Registration token")
         String registrationToken,
 
         LoginResponse loginResponse
