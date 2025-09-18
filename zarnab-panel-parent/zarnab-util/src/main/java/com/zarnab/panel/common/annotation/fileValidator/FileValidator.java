@@ -12,22 +12,29 @@ import java.util.regex.Pattern;
 import static com.zarnab.panel.common.translate.Translator.translate;
 
 
-public class FileValidator implements ConstraintValidator<FileConstraint, List<MultipartFile>> {
+public class FileValidator implements ConstraintValidator<FileConstraint, Object> {
     private long maxSize;
-    private String[] allowedTypes;
+    private List<String> allowedTypesList;
     private int maxFiles;
 
-    @Override
+
     public void initialize(FileConstraint constraint) {
         this.maxSize = parseSizeToBytes(constraint.maxSize());
-        this.allowedTypes = constraint.allowedTypes();
+        this.allowedTypesList = Arrays.asList(constraint.allowedTypes());
         this.maxFiles = constraint.maxFiles();
     }
 
     @Override
-    public boolean isValid(List<MultipartFile> files, ConstraintValidatorContext context) {
-        if (files == null || files.isEmpty()) {
-            return true;
+    public boolean isValid(Object value, ConstraintValidatorContext context) {
+        if (value == null) return true; // optional, or false if required
+
+        List<MultipartFile> files;
+        if (value instanceof MultipartFile file) {
+            files = List.of(file);
+        } else if (value instanceof List<?> list && list.stream().allMatch(o -> o instanceof MultipartFile)) {
+            files = (List<MultipartFile>) list;
+        } else {
+            return false; // unsupported type
         }
 
         if (files.size() > maxFiles) {
@@ -35,7 +42,6 @@ public class FileValidator implements ConstraintValidator<FileConstraint, List<M
             context.buildConstraintViolationWithTemplate(
                     translate("error.validation.maxFilesExceeded", maxFiles)
             ).addConstraintViolation();
-
             return false;
         }
 
@@ -45,16 +51,15 @@ public class FileValidator implements ConstraintValidator<FileConstraint, List<M
                 context.buildConstraintViolationWithTemplate(
                         translate("error.validation.maxSizeExceeded", file.getOriginalFilename(), formatSize(maxSize))
                 ).addConstraintViolation();
-
                 return false;
             }
 
-            if (!Arrays.asList(allowedTypes).isEmpty() && !Arrays.asList(allowedTypes).contains(file.getContentType())) {
+            String contentType = file.getContentType();
+            if (!allowedTypesList.isEmpty() && (contentType == null || !allowedTypesList.contains(contentType))) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(
-                        translate("error.validation.invalidFileType", file.getOriginalFilename(), Arrays.toString(allowedTypes))
+                        translate("error.validation.invalidFileType", file.getOriginalFilename(), String.join(", ", allowedTypesList))
                 ).addConstraintViolation();
-
                 return false;
             }
         }
