@@ -64,6 +64,11 @@
                 <artifactId>zarnab-minio</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.zarnab.panel</groupId>
+                <artifactId>zarnab-clients</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- MapStruct -->
             <dependency>

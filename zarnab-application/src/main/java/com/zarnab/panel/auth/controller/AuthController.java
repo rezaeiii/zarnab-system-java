@@ -18,6 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.zarnab.panel.auth.dto.res.MeResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.zarnab.panel.auth.model.User;
 
 /**
  * Web layer entry point for user authentication and registration flows.
@@ -31,7 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuthController {
 
     private final AuthService authService;
-    private final CookieHelper cookieHelper; // Inject the new helper
+    private final CookieHelper cookieHelper;
 
     /**
      * Step 1: Initiates the login/registration process by sending an OTP.
@@ -77,6 +80,26 @@ public class AuthController {
         RegisterRequest request = new RegisterRequest(registrationToken, firstName, lastName, nationalId);
         LoginResult loginResult = authService.registerUser(request, nationalIdImage);
         return buildLoginSuccessResponse(loginResult);
+    }
+
+    /**
+     * Returns authenticated user's profile based on the current security context.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<MeResponse> me(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(MeResponse.from(user));
+    }
+
+    /**
+     * Refresh access and refresh tokens using HttpOnly refresh token cookie.
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        LoginResult loginResult = authService.refreshTokens(refreshToken);
+        HttpHeaders cookieHeader = cookieHelper.createRefreshTokenCookie(loginResult.refreshToken());
+        return ResponseEntity.ok()
+                .headers(cookieHeader)
+                .body(new LoginResponse(loginResult.accessToken()));
     }
 
     /**

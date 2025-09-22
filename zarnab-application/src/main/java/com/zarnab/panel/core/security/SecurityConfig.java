@@ -3,6 +3,7 @@ package com.zarnab.panel.core.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -25,7 +27,11 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private static final String[] PUBLIC_URLS = {
-            "/api/auth/**",
+            "/api/auth/initiate",
+            "/api/auth/verify-otp",
+            "/api/auth/register",
+            "/api/auth/refresh",
+            "/api/faraboom/**", // TODO remove
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"

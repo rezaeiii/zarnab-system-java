@@ -17,5 +17,7 @@ public interface AuthService {
     VerifyOtpResult verifyOtp(String mobileNumber, String otp);
 
     LoginResult registerUser(RegisterRequest request, MultipartFile nationalIdImage);
+
+    LoginResult refreshTokens(String refreshToken);
 }
 

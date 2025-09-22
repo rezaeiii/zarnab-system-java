@@ -94,6 +94,29 @@ public class AuthServiceImpl implements AuthService {
         return createLoginResult(newUser);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public LoginResult refreshTokens(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BadCredentialsException("Missing refresh token");
+        }
+        String mobileNumber;
+        try {
+            mobileNumber = jwtService.extractMobileNumber(refreshToken);
+        } catch (Exception ex) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
+
+        User user = userRepository.findByMobileNumber(mobileNumber)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!jwtService.isTokenValid(refreshToken, user)) {
+            throw new BadCredentialsException("Expired or invalid refresh token");
+        }
+
+        return createLoginResult(user);
+    }
+
     /**
      * Generates both access and refresh tokens for a given user.
      * This is the single source of truth for creating a login session.
