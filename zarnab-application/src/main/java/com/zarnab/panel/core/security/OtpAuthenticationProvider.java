@@ -2,6 +2,7 @@ package com.zarnab.panel.core.security;
 
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.repository.UserRepository;
+import com.zarnab.panel.auth.service.otp.OtpPurpose;
 import com.zarnab.panel.auth.service.otp.OtpService;
 import com.zarnab.panel.common.exception.ZarnabException;
 import com.zarnab.panel.core.exception.ExceptionType;
@@ -30,7 +31,7 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
         String mobileNumber = authentication.getName();
         String submittedOtp = authentication.getCredentials().toString();
 
-        otpService.verifyOtp(mobileNumber, submittedOtp);
+        otpService.verifyOtp(OtpPurpose.AUTH, mobileNumber, submittedOtp);
 
         // If OTP is valid, load the user details
         User user = userRepository.findByMobileNumber(mobileNumber)

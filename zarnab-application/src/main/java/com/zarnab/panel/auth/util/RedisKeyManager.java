@@ -32,4 +32,20 @@ public final class RedisKeyManager {
     public static String getRegistrationTokenKey(String token) {
         return REG_TOKEN_KEY_PREFIX + token;
     }
+
+    /**
+     * Returns a namespaced OTP key in the format:
+     * otp:{purpose}:{subjectId}
+     */
+    public static String getOtpKey(String purpose, String subjectId) {
+        return OTP_KEY_PREFIX + purpose + ":" + subjectId;
+    }
+
+    /**
+     * Returns a namespaced OTP cooldown key in the format:
+     * otp_cooldown:{purpose}:{subjectId}
+     */
+    public static String getOtpCooldownKey(String purpose, String subjectId) {
+        return OTP_COOLDOWN_KEY_PREFIX + purpose + ":" + subjectId;
+    }
 }

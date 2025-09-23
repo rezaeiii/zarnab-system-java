@@ -7,21 +7,14 @@ package com.zarnab.panel.auth.service.otp;
 public interface OtpService {
 
     /**
-     * Generates, stores, and sends an OTP to the given mobile number.
-     * Enforces a cooldown period to prevent abuse and repeated requests.
-     *
-     * @param mobileNumber The target mobile number to send the OTP to.
-     * @throws com.zarnab.panel.common.exception.ZarnabException if the cooldown period is still active.
+     * Primary send method using purpose and mobile number.
      */
-    void sendOtp(String mobileNumber);
+    void sendOtp(OtpPurpose purpose, String mobileNumber);
 
     /**
-     * Verifies the provided OTP against the stored one for the given mobile number.
-     * If verification is successful, the OTP is consumed and cannot be used again.
-     *
-     * @param mobileNumber The mobile number associated with the OTP.
-     * @param otp          The 6-digit code provided by the user.
-     * @throws org.springframework.security.authentication.BadCredentialsException if the OTP is invalid or expired.
+     * Primary verify method using purpose and mobile number.
      */
-    void verifyOtp(String mobileNumber, String otp);
+    void verifyOtp(OtpPurpose purpose, String mobileNumber, String otp);
+
+
 }

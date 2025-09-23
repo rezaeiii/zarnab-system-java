@@ -6,7 +6,6 @@ import com.zarnab.panel.auth.util.RedisKeyManager;
 import com.zarnab.panel.common.exception.ZarnabException;
 import com.zarnab.panel.core.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Default implementation of the OtpService using Redis for storage and cooldowns.
- * This version incorporates best practices such as externalized configuration and atomic operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -24,63 +22,31 @@ public class RedisOtpService implements OtpService {
     private final TokenStore tokenStore;
     private final SmsService smsService;
 
-    // --- Configuration injected from application.properties (in seconds) ---
-
-    @Value("${zarnab.security.otp.cooldown-seconds:120}")
-    private long cooldownSeconds;
-
-    @Value("${zarnab.security.otp.expiration-seconds:300}")
-    private long otpExpirationSeconds;
-
-    /**
-     * Sends an OTP to the user's mobile number after ensuring a cooldown period is respected.
-     * The cooldown check is performed atomically to prevent race conditions.
-     *
-     * @param mobileNumber The target mobile number.
-     * @throws ZarnabException if a request is made during the cooldown period.
-     */
     @Override
-    public void sendOtp(String mobileNumber) {
-        String cooldownKey = RedisKeyManager.getOtpCooldownKey(mobileNumber);
+    public void sendOtp(OtpPurpose purpose, String mobileNumber) {
+        String cooldownKey = RedisKeyManager.getOtpCooldownKey(purpose.code(), mobileNumber);
 
-        // Atomically set the cooldown key. If it's already present, storeIfAbsent returns false.
-        boolean canSend = tokenStore.storeIfAbsent(cooldownKey, "active", cooldownSeconds, TimeUnit.SECONDS);
+        boolean canSend = tokenStore.storeIfAbsent(cooldownKey, "active", purpose.cooldownSeconds(), TimeUnit.SECONDS);
         if (!canSend) {
-            // If the cooldown key is still active, fetch its remaining time.
             long remainingSeconds = tokenStore.getExpirationTime(cooldownKey, TimeUnit.SECONDS)
-                    .orElse(cooldownSeconds); // Fallback to the full duration if key expired just now.
-
+                    .orElse(purpose.cooldownSeconds());
             throw new ZarnabException(ExceptionType.TOO_MANY_REQUESTS, remainingSeconds);
         }
 
         String otp = otpGenerator.generate();
-        String otpKey = RedisKeyManager.getOtpKey(mobileNumber);
-
-        // Store the generated OTP with its own expiration.
-        tokenStore.store(otpKey, otp, otpExpirationSeconds, TimeUnit.SECONDS);
-        smsService.sendSms(mobileNumber, "Zarnab Panel Code: " + otp);
+        String otpKey = RedisKeyManager.getOtpKey(purpose.code(), mobileNumber);
+        tokenStore.store(otpKey, otp, purpose.expirationSeconds(), TimeUnit.SECONDS);
+        smsService.sendSms(mobileNumber, purpose.formatMessage(otp));
     }
 
-    /**
-     * Verifies the provided OTP against the one stored in Redis.
-     * If verification is successful, the OTP key is consumed (deleted).
-     *
-     * @param mobileNumber The mobile number to verify.
-     * @param otp          The OTP provided by the user.
-     * @throws BadCredentialsException if the OTP is invalid, expired, or not found.
-     */
     @Override
-    public void verifyOtp(String mobileNumber, String otp) {
-        String otpKey = RedisKeyManager.getOtpKey(mobileNumber);
-
+    public void verifyOtp(OtpPurpose purpose, String mobileNumber, String otp) {
+        String otpKey = RedisKeyManager.getOtpKey(purpose.code(), mobileNumber);
         String storedOtp = tokenStore.retrieve(otpKey)
                 .orElseThrow(() -> new BadCredentialsException("Invalid or expired OTP."));
-
         if (!storedOtp.equals(otp)) {
             throw new BadCredentialsException("Invalid OTP.");
         }
-
-        // Consume the OTP upon successful verification to prevent reuse.
         tokenStore.consume(otpKey);
     }
 }

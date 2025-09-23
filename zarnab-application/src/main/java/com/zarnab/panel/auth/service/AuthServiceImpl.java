@@ -9,6 +9,7 @@ import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.model.UserProfileType;
 import com.zarnab.panel.auth.repository.UserRepository;
+import com.zarnab.panel.auth.service.otp.OtpPurpose;
 import com.zarnab.panel.auth.service.otp.OtpService;
 import com.zarnab.panel.auth.service.ratelimit.RateLimiter;
 import com.zarnab.panel.auth.service.token.TokenStore;
@@ -46,14 +47,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void initiateLogin(InitiateLoginRequest request) {
-        otpService.sendOtp(request.mobileNumber());
+        otpService.sendOtp(OtpPurpose.AUTH, request.mobileNumber());
     }
 
     @Override
     @Transactional(readOnly = true)
     public VerifyOtpResult verifyOtp(String mobileNumber, String otp) {
         rateLimiter.checkVerificationAttempt(mobileNumber);
-        otpService.verifyOtp(mobileNumber, otp);
+        otpService.verifyOtp(OtpPurpose.AUTH, mobileNumber, otp);
 
         return userRepository.findByMobileNumber(mobileNumber)
                 .map(user -> new VerifyOtpResult(VerifyOtpResult.Status.LOGIN_SUCCESS, createLoginResult(user), null))
