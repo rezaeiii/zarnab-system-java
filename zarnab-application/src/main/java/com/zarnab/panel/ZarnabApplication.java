@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ZarnabInfrastructureApplication {
+public class ZarnabApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ZarnabInfrastructureApplication.class, args);
+        SpringApplication.run(ZarnabApplication.class, args);
     }
 
 }

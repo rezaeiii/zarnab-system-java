@@ -28,7 +28,7 @@ public class IngotServiceImpl implements IngotService {
 		boolean isAdmin = requester.getRoles().contains(Role.ADMIN);
 		List<Ingot> ingots = isAdmin
 				? ingotRepository.findAll()
-				: ingotRepository.findByOwner_Id(requester.getId());
+				: ingotRepository.findByOwnerId(requester.getId());
 		return ingots.stream().map(IngotResponse::from).collect(Collectors.toList());
 	}
 
