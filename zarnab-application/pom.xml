@@ -30,10 +30,10 @@
             <groupId>com.zarnab.panel</groupId>
             <artifactId>zarnab-minio</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.zarnab.panel</groupId>
-            <artifactId>zarnab-clients</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.zarnab.panel</groupId>-->
+<!--            <artifactId>zarnab-clients</artifactId>-->
+<!--        </dependency>-->
 
         <!-- Spring Boot Starters -->
         <dependency>
