@@ -2,6 +2,8 @@ package com.zarnab.panel.ingot.dto;
 
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.ingot.model.Ingot;
+import com.zarnab.panel.ingot.model.Transfer;
+import com.zarnab.panel.ingot.model.TransferStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
@@ -50,4 +52,27 @@ public class IngotDtos {
                           String firstName,
                           String lastName) {
     }
-} 
+
+    public record TransferDto(
+            Long id,
+            IngotResponse ingot,
+            UserDto seller,
+            UserDto buyer,
+            String buyerMobileNumber,
+            TransferStatus status
+    ) {
+        public static TransferDto from(Transfer transfer) {
+            User seller = transfer.getSeller();
+            User buyer = transfer.getBuyer();
+
+            return new TransferDto(
+                    transfer.getId(),
+                    IngotResponse.from(transfer.getIngot()),
+                    new UserDto(seller.getId(), seller.getMobileNumber(), seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getFirstName() : null, seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getLastName() : null),
+                    buyer != null ? new UserDto(buyer.getId(), buyer.getMobileNumber(), buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getFirstName() : null, buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getLastName() : null) : null,
+                    transfer.getBuyerMobileNumber(),
+                    transfer.getStatus()
+            );
+        }
+    }
+}

@@ -40,7 +40,7 @@ public class RedisOtpService implements OtpService {
     }
 
     @Override
-    public void verifyOtp(OtpPurpose purpose, String mobileNumber, String otp) {
+    public boolean verifyOtp(OtpPurpose purpose, String mobileNumber, String otp) {
         String otpKey = RedisKeyManager.getOtpKey(purpose.code(), mobileNumber);
         String storedOtp = tokenStore.retrieve(otpKey)
                 .orElseThrow(() -> new BadCredentialsException("Invalid or expired OTP."));
@@ -48,5 +48,6 @@ public class RedisOtpService implements OtpService {
             throw new BadCredentialsException("Invalid OTP.");
         }
         tokenStore.consume(otpKey);
+        return false;
     }
 }

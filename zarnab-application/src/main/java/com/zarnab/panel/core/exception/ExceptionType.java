@@ -21,6 +21,11 @@ public enum ExceptionType implements IZarnabException {
     TOKEN_EXPIRED_OR_INVALID(HttpStatus.UNAUTHORIZED, 1002, "error.auth.token.invalid"),
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, 1003, "error.user.alreadyExists"),
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, 2002, "error.auth.otp.cooldown"),
+    INGOT_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "error.ingot.notFound"),
+    INGOT_OWNERSHIP_ERROR(HttpStatus.FORBIDDEN, 3002, "error.ingot.ownership"),
+    TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, 3003, "error.transfer.notFound"),
+    TRANSFER_SELLER_MISMATCH(HttpStatus.FORBIDDEN, 3004, "error.transfer.sellerMismatch"),
+
 
     // --- Spring Framework & Web Layer Errors ---
     VALIDATION_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, 4001, "error.validation.failed"),

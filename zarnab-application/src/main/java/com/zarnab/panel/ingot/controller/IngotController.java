@@ -29,4 +29,9 @@ public class IngotController {
 	public ResponseEntity<IngotResponse> create(@RequestBody IngotCreateRequest request) {
 		return ResponseEntity.ok(ingotService.create(request));
 	}
-} 
+
+	@GetMapping("/inquiry/{serial}")
+	public ResponseEntity<IngotResponse> inquiry(@PathVariable String serial) {
+		return ResponseEntity.ok(ingotService.inquiry(serial));
+	}
+}

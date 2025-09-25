@@ -9,4 +9,5 @@ import java.util.List;
 public interface IngotService {
 	List<IngotResponse> list(User requester);
 	IngotResponse create(IngotCreateRequest request);
+	IngotResponse inquiry(String serial);
 } 

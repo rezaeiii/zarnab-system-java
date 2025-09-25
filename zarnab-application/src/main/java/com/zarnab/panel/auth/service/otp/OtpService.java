@@ -13,8 +13,10 @@ public interface OtpService {
 
     /**
      * Primary verify method using purpose and mobile number.
+     *
+     * @return
      */
-    void verifyOtp(OtpPurpose purpose, String mobileNumber, String otp);
+    boolean verifyOtp(OtpPurpose purpose, String mobileNumber, String otp);
 
 
 }
