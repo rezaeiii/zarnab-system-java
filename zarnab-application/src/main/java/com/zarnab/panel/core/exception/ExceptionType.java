@@ -25,6 +25,8 @@ public enum ExceptionType implements IZarnabException {
     INGOT_OWNERSHIP_ERROR(HttpStatus.FORBIDDEN, 3002, "error.ingot.ownership"),
     TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, 3003, "error.transfer.notFound"),
     TRANSFER_SELLER_MISMATCH(HttpStatus.FORBIDDEN, 3004, "error.transfer.sellerMismatch"),
+    DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3005, "error.ingot.duplicateTheftReport"),
+    THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3006, "error.ingot.theftReportNotFound"),
 
 
     // --- Spring Framework & Web Layer Errors ---
