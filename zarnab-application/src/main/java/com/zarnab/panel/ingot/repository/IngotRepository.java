@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface IngotRepository extends JpaRepository<Ingot, Long> {
 
-    @EntityGraph(attributePaths = {"owner.name", "owner.family", "owner.id"})
+    @EntityGraph(attributePaths = {"owner.naturalPersonProfile.firstName", "owner.naturalPersonProfile.lastName", "owner.id"})
     List<Ingot> findByOwnerId(Long ownerId);
 
     Optional<Ingot> findBySerial(String serial);

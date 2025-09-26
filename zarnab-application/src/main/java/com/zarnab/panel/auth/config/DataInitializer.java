@@ -8,6 +8,7 @@ import com.zarnab.panel.auth.repository.UserRepository;
 import com.zarnab.panel.ingot.model.Ingot;
 import com.zarnab.panel.ingot.repository.IngotRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +28,7 @@ public class DataInitializer {
     private final IngotRepository ingotRepository;
 
     @Bean
+    @SneakyThrows
     CommandLineRunner initDatabase() {
         return args -> {
             if (userRepository.count() == 0) {
@@ -60,16 +62,20 @@ public class DataInitializer {
             User user = userRepository.findByMobileNumber("09999999999").orElseThrow();
 
             log.info("Seeding database with sample ingots...");
-            for (int i = 1; i <= 5; i++) {
-                ingotRepository.save(Ingot.builder()
-                        .serial("ZRN-INGOT-00" + i)
-                        .manufactureDate(LocalDate.now())
-                        .karat(24)
-                        .weightGrams(100.0 * i)
-                        .owner(user)
-                        .build());
+            boolean alreadyInit = !ingotRepository.findByOwnerId(user.getId()).isEmpty();
+            if (!alreadyInit) {
+                for (int i = 1; i <= 5; i++) {
+                    ingotRepository.save(Ingot.builder()
+                            .serial("ZRN-INGOT-00" + i)
+                            .manufactureDate(LocalDate.now())
+                            .karat(24)
+                            .weightGrams(100.0 * i)
+                            .owner(user)
+                            .build());
+                }
+                log.info("Ingot seeding complete.");
             }
-            log.info("Ingot seeding complete.");
+
         };
     }
 }
