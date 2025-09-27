@@ -18,5 +18,10 @@ public interface OtpService {
      */
     boolean verifyOtp(OtpPurpose purpose, String mobileNumber, String otp);
 
+    /**
+     * Clears the OTP and its cooldown for a specific purpose and mobile number.
+     */
+    void clearOtp(OtpPurpose purpose, String mobileNumber);
+
 
 }

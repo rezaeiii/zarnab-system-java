@@ -1,6 +1,7 @@
 package com.zarnab.panel.ingot.dto;
 
 import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.common.annotation.friendlyDate.FriendlyDate;
 import com.zarnab.panel.ingot.model.Ingot;
 import com.zarnab.panel.ingot.model.Transfer;
 import com.zarnab.panel.ingot.model.TransferStatus;
@@ -27,6 +28,7 @@ public class IngotDtos {
     public record IngotResponse(
             Long id,
             String serial,
+            @FriendlyDate(includeTime = false)
             LocalDate manufactureDate,
             Integer karat,
             Double weightGrams,

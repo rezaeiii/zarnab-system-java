@@ -43,4 +43,23 @@ public class CookieHelper {
         headers.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return headers;
     }
+
+    /**
+     * Creates an HTTP header to clear the refresh token cookie.
+     *
+     * @return The HttpHeaders object containing the Set-Cookie header to expire the cookie.
+     */
+    public HttpHeaders clearRefreshTokenCookie() {
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(!Arrays.stream(activeProfiles).anyMatch(p -> p.equals("dev") || p.equals("docker-dev")))
+                .path("/")
+                .maxAge(0)
+                .sameSite(Arrays.stream(activeProfiles).anyMatch(p -> p.equals("dev") || p.equals("docker-dev")) ? "Lax" : "Strict")
+                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        return headers;
+    }
 }

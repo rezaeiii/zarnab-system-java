@@ -8,6 +8,8 @@ import com.zarnab.panel.auth.dto.req.VerifyOtpRequest;
 import com.zarnab.panel.auth.dto.res.LoginResponse;
 import com.zarnab.panel.auth.dto.res.VerifyOtpResponse;
 import com.zarnab.panel.auth.service.AuthService;
+import com.zarnab.panel.auth.service.otp.OtpPurpose;
+import com.zarnab.panel.auth.service.otp.OtpService;
 import com.zarnab.panel.auth.util.CookieHelper;
 import com.zarnab.panel.common.annotation.fileValidator.FileConstraint;
 import jakarta.validation.Valid;
@@ -34,6 +36,7 @@ import com.zarnab.panel.auth.model.User;
 public class AuthController {
 
     private final AuthService authService;
+    private final OtpService otpService;
     private final CookieHelper cookieHelper;
 
     /**
@@ -100,6 +103,21 @@ public class AuthController {
         return ResponseEntity.ok()
                 .headers(cookieHeader)
                 .body(new LoginResponse(loginResult.accessToken()));
+    }
+
+    /**
+     * Logs the user out by clearing the refresh token cookie.
+     * The client is responsible for deleting the access token.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal User user) {
+        if (user != null) {
+            otpService.clearOtp(OtpPurpose.AUTH, user.getMobileNumber());
+        }
+        HttpHeaders cookieHeader = cookieHelper.clearRefreshTokenCookie();
+        return ResponseEntity.ok()
+                .headers(cookieHeader)
+                .build();
     }
 
     /**

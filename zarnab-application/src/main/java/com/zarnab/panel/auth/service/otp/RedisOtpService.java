@@ -50,4 +50,12 @@ public class RedisOtpService implements OtpService {
         tokenStore.consume(otpKey);
         return false;
     }
+
+    @Override
+    public void clearOtp(OtpPurpose purpose, String mobileNumber) {
+        String otpKey = RedisKeyManager.getOtpKey(purpose.code(), mobileNumber);
+        String cooldownKey = RedisKeyManager.getOtpCooldownKey(purpose.code(), mobileNumber);
+        tokenStore.consume(otpKey);
+        tokenStore.consume(cooldownKey);
+    }
 }
