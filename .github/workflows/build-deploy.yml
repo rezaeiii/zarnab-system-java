@@ -1,34 +1,17 @@
-name: Build & Deploy Backend
-
-on:
-  push:
-    branches: ["master"]
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      artifact-path: ${{ steps.upload-artifact.outputs.artifact-path }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: maven
-
-      - name: Build backend (skip tests)
-        run: |
+      - run: |
           cd zarnab-panel-parent
           mvn -B package -DskipTests
-
-      - name: Upload backend artifact
-        id: upload-artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: backend-jar
           path: zarnab-application/target/*.jar
@@ -37,34 +20,24 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download backend artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: ./artifact
 
-      - name: Deploy to Hetzner
+      - name: Copy artifact to Hetzner
+        run: |
+          scp -i ${{ secrets.SSH_KEY }} -o StrictHostKeyChecking=no ./artifact/*.jar deploy@${{ vars.SSH_HOST }}:/var/www/zarnab/backend/artifact/
+
+      - name: Deploy backend via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ vars.SSH_HOST }}
           username: deploy
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # Ensure git trusts this directory
-            git config --global --add safe.directory /var/www/zarnab/backend
-
-            # Create backend directory if not exists
-            mkdir -p /var/www/zarnab/backend
-
-            # Copy artifact JAR to server
-            mkdir -p /var/www/zarnab/backend/artifact
-            echo "Transferring artifact..."
-            scp -i ${{ secrets.SSH_KEY }} -o StrictHostKeyChecking=no ./artifact/*.jar deploy@${{ vars.SSH_HOST }}:/var/www/zarnab/backend/artifact/
-
             cd /var/www/zarnab/backend
             git pull origin master
             docker compose build
             docker compose up -d --remove-orphans
-
-            # Clean up dangling images
             docker image prune -f
