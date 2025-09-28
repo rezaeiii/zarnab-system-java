@@ -77,7 +77,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ../../../frontend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - app
       - frontend
