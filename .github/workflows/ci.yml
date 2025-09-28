@@ -2,9 +2,9 @@ name: Backend CI
 
 on:
   pull_request:
-    branches: [ "main" ]
-    paths:
-      - "zarnab-application/**"
+    branches: [ "master" ]
+#    paths:
+#      - "zarnab-application/**"
 
 jobs:
   build:
