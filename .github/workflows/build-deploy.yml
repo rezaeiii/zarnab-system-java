@@ -55,7 +55,7 @@ jobs:
           username: deploy
           key: ${{ secrets.SSH_KEY }}
           source: "./artifact/*.jar"
-          target: "/var/www/zarnab/backend/artifact/"
+          target: "/var/www/zarnab/backend/zarnab-application/target/"
 
       # Deploy backend on server
       - name: Deploy backend via SSH
