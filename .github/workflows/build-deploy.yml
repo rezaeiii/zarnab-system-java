@@ -74,6 +74,7 @@ jobs:
             git pull origin master
 
             # Build and run Docker
+            mv zarnab-application/target/artifact/*.jar ./zarnab-application/target/app.jar
             cd zarnab-application/target
             ls
             cd ../../
