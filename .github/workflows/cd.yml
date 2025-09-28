@@ -1,0 +1,23 @@
+name: Deploy to Hetzner
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy full stack to Hetzner
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/zarnab/backend
+            git pull origin master
+            docker compose build
+            docker compose up -d --remove-orphans
+            docker image prune -f
