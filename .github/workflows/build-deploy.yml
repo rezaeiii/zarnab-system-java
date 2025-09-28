@@ -74,6 +74,7 @@ jobs:
             git pull origin master
 
             # Build and run Docker
+            cd docker-compose/dev
             docker compose build
             docker compose up -d --remove-orphans
 
