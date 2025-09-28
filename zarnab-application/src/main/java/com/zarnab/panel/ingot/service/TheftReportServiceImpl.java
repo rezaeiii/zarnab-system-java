@@ -64,7 +64,7 @@ public class TheftReportServiceImpl implements TheftReportService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public TheftReportDtos.TheftReportResponse updateTheftReportStatus(Long reportId, TheftReportStatus status) {
         TheftReport theftReport = theftReportRepository.findById(reportId)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.THEFT_REPORT_NOT_FOUND));
