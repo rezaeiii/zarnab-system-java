@@ -71,7 +71,7 @@ services:
       - zarnab-network
 
   gateway:
-    build: ./gateway  # contains nginx.conf and Dockerfile above
+    build: ../../gateway  # contains nginx.conf and Dockerfile above
     container_name: zarnab_gateway
     ports:
       - "80:80"
