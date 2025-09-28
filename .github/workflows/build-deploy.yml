@@ -3,22 +3,34 @@ name: Build & Deploy Backend
 on:
   push:
     branches: ["master"]
-
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      # Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Setup Java
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
           cache: maven
-      - run: |
+
+      # Build backend
+      - name: Build backend (skip tests)
+        run: |
           cd zarnab-panel-parent
           mvn -B package -DskipTests
-      - uses: actions/upload-artifact@v4
+
+      # Upload artifact to workflow storage
+      - name: Upload backend artifact
+        uses: actions/upload-artifact@v4
         with:
           name: backend-jar
           path: zarnab-application/target/*.jar
@@ -26,16 +38,26 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/download-artifact@v4
+      # Download artifact
+      - name: Download backend artifact
+        uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: ./artifact
 
+      # Copy artifact to Hetzner via SCP
       - name: Copy artifact to Hetzner
-        run: |
-          scp -i ${{ secrets.SSH_KEY }} -o StrictHostKeyChecking=no ./artifact/*.jar deploy@${{ vars.SSH_HOST }}:/var/www/zarnab/backend/artifact/
+        uses: appleboy/scp-action@v0.1.6
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_KEY }}
+          source: "./artifact/*.jar"
+          target: "/var/www/zarnab/backend/artifact/"
 
+      # Deploy backend on server
       - name: Deploy backend via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -43,8 +65,17 @@ jobs:
           username: deploy
           key: ${{ secrets.SSH_KEY }}
           script: |
+            # Ensure git trusts the directory
+            git config --global --add safe.directory /var/www/zarnab/backend
+
             cd /var/www/zarnab/backend
+
+            # Pull latest Docker config
             git pull origin master
+
+            # Build and run Docker
             docker compose build
             docker compose up -d --remove-orphans
+
+            # Clean up dangling images
             docker image prune -f
