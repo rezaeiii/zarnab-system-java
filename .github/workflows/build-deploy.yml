@@ -1,15 +1,29 @@
-name: Deploy to Hetzner
+name: Build & Deploy Backend
 
 on:
-  workflow_dispatch:
   push:
     branches: [ "master" ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy full stack to Hetzner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build backend (skip tests)
+        run: |
+          cd zarnab-panel-parent
+          mvn -B package -DskipTests
+
+      - name: Deploy to Hetzner
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ vars.SSH_HOST }}
