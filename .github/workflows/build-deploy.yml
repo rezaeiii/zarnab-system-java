@@ -58,7 +58,7 @@ jobs:
           target: "/var/www/zarnab/backend/zarnab-application/target/"
 
       # Deploy backend on server
-      - name: Deploy backend via SSH
+      - name: docker compose up
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ vars.SSH_HOST }}
@@ -74,6 +74,9 @@ jobs:
             git pull origin master
 
             # Build and run Docker
+            cd zarnab-application/target
+            ls
+            cd ../../
             cd docker-compose/dev
             docker compose build
             docker compose up -d --remove-orphans
