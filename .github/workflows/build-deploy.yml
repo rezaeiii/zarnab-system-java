@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-jar
-          path: zarnab-panel-parent/target/*.jar
+          path: zarnab-application/target/*.jar
 
   deploy:
     needs: build
