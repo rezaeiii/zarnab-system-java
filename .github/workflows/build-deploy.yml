@@ -5,11 +5,13 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      jar-path: ${{ steps.build-backend.outputs.jar-path }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK
@@ -18,10 +20,28 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Build backend (skip tests)
+      - name: Build backend
+        id: build-backend
         run: |
           cd zarnab-panel-parent
           mvn -B package -DskipTests
+          echo "jar-path=target/*.jar" >> $GITHUB_OUTPUT
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-jar
+          path: zarnab-panel-parent/target/*.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-jar
+          path: ./artifact
 
       - name: Deploy to Hetzner
         uses: appleboy/ssh-action@v1.2.0
@@ -31,8 +51,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /var/www/zarnab/backend
-            git pull origin master
-            cd docker-compose/dev
+            # Copy artifact to server
+            mkdir -p ./artifact
+            echo "${{ github.workspace }}/artifact/*.jar"
+            # Example: use scp to copy jar if needed
+            # scp ./artifact/*.jar deploy@${{ vars.SSH_HOST }}:/var/www/zarnab/backend/
             docker compose build
             docker compose up -d --remove-orphans
-            docker image prune -f
