@@ -12,7 +12,7 @@ jobs:
       - name: Deploy full stack to Hetzner
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ vars.SSH_HOST }}
           username: deploy
           key: ${{ secrets.SSH_KEY }}
           script: |
