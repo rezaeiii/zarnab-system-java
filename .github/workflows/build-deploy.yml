@@ -1,7 +1,11 @@
+name: Build & Deploy Backend
+
+on:
+  push:
+    branches: ["master"]
+
+
 jobs:
-  on:
-    push:
-      branches: [ "master" ]
   build:
     runs-on: ubuntu-latest
     steps:
