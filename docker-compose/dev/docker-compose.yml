@@ -79,6 +79,7 @@ services:
       - zarnab-network
     depends_on:
       - app
+      - frontend
 
 networks:
   zarnab-network:
