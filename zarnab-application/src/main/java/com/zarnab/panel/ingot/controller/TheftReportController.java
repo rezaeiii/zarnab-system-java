@@ -2,6 +2,7 @@ package com.zarnab.panel.ingot.controller;
 
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.ingot.dto.TheftReportDtos;
+import com.zarnab.panel.ingot.model.TheftReportStatus;
 import com.zarnab.panel.ingot.service.TheftReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +30,9 @@ public class TheftReportController {
         return ResponseEntity.ok(theftReportService.getTheftReports(user));
     }
 
-    @PutMapping("/{reportId}/status")
-    public ResponseEntity<TheftReportDtos.TheftReportResponse> updateTheftReportStatus(@PathVariable Long reportId, @RequestBody TheftReportDtos.UpdateTheftReportStatusRequest request) {
-        return ResponseEntity.ok(theftReportService.updateTheftReportStatus(reportId, request));
+    @PutMapping("/{reportId}/status/{status}")
+    public ResponseEntity<TheftReportDtos.TheftReportResponse> updateTheftReportStatus(@PathVariable Long reportId,
+                                                                                       @PathVariable TheftReportStatus status) {
+        return ResponseEntity.ok(theftReportService.updateTheftReportStatus(reportId, status));
     }
 }
