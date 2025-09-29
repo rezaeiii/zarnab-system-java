@@ -64,14 +64,14 @@ services:
       minio:
         condition: service_healthy
 
-#  frontend:
-#    build: ../../../frontend
-#    container_name: zarnab_frontend
-#    networks:
-#      - zarnab-network
+  frontend:
+    build: ../../../frontend
+    container_name: zarnab_frontend
+    networks:
+      - zarnab-network
 
   gateway:
-    build: ../../../frontend  # contains nginx.conf and Dockerfile above
+    build: ../../gateway
     container_name: zarnab_gateway
     ports:
       - "80:80"
