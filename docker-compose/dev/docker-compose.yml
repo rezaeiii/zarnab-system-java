@@ -75,6 +75,9 @@ services:
     container_name: zarnab_gateway
     ports:
       - "80:80"
+    volumes:
+      - /etc/letsencrypt/live/zarnab.kiwiapp.ir/fullchain.pem:/etc/letsencrypt/live/zarnab.kiwiapp.ir/fullchain.pem:ro
+      - /etc/letsencrypt/live/zarnab.kiwiapp.ir/privkey.pem:/etc/letsencrypt/live/zarnab.kiwiapp.ir/privkey.pem:ro
     networks:
       - zarnab-network
     depends_on:
