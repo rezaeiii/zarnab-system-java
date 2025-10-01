@@ -54,7 +54,7 @@ public class TheftReportServiceImpl implements TheftReportService {
         if (user.getRoles().stream().anyMatch(role -> role.equals(Role.ADMIN))) {
             reports = theftReportRepository.findAll();
         } else {
-            reports = theftReportRepository.findByReporterId(user.getId());
+            reports = theftReportRepository.findAllByReporterId(user.getId());
         }
         return reports.stream()
                 .map(TheftReportDtos.TheftReportResponse::from)
