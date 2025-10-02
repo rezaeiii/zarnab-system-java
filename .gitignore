@@ -31,3 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
+/docker-compose/dev/redis_data/dump.rdb

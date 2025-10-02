@@ -20,6 +20,7 @@
         <module>zarnab-util</module>
         <module>zarnab-translate</module>
         <module>zarnab-minio</module>
+        <module>zarnab-clients</module>
         <module>../zarnab-application</module>
     </modules>
 
