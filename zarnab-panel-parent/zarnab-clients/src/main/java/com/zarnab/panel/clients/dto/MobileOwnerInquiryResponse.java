@@ -6,5 +6,7 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MobileOwnerInquiryResponse {
-    private boolean result;
+    private boolean isMatched;
+    private int code;
+    private String message;
 }

@@ -36,6 +36,6 @@ public class ShahkarInquiryClient {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(MobileOwnerInquiryResponse.class)
-                .map(MobileOwnerInquiryResponse::isResult);
+                .map(MobileOwnerInquiryResponse::isMatched);
     }
 }

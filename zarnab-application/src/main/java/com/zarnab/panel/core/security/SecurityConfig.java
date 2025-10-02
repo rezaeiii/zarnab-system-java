@@ -32,7 +32,6 @@ public class SecurityConfig {
             "/api/auth/register",
             "/api/auth/refresh",
             "/api/otp/**",
-            "/api/faraboom/**", // TODO remove
             "api/users/**", // TODO remove
             "/v3/api-docs/**",
             "/swagger-ui/**",

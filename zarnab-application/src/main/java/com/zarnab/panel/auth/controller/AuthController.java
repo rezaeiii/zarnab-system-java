@@ -74,7 +74,6 @@ public class AuthController {
     @PostMapping(value = "/register", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<VerifyOtpResponse> register(
             @FileConstraint(maxFiles = 1) @RequestPart(name = "nationalIdImage", required = false) MultipartFile nationalIdImage,
-//            @Valid @RequestPart RegisterRequest request
             @RequestParam("nationalId") String nationalId,
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
