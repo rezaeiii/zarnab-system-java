@@ -5,6 +5,9 @@ import java.util.regex.Pattern;
 
 public class CharacterUtil {
 
+    private static final char[] persianDigits = {'\u06F0','\u06F1','\u06F2','\u06F3','\u06F4','\u06F5','\u06F6','\u06F7','\u06F8','\u06F9'};
+    private static final char[] arabicDigits  = {'\u0660','\u0661','\u0662','\u0663','\u0664','\u0665','\u0666','\u0667','\u0668','\u0669'};
+
     public static Boolean hasArabicCharacter(String input) {
         if(input == null){
             return false;
@@ -89,6 +92,18 @@ public class CharacterUtil {
                 .replaceAll("[\u06FE]", "\u0645")//م
                 .replaceAll("[\u06FF]", "\u0647");//ه
         return replaceAll;
+    }
+
+
+
+    public static String normalizeDigits(String input) {
+        if (input == null) return null;
+        String result = input;
+        for (int i=0; i<10; i++) {
+            result = result.replace(persianDigits[i], (char)('0'+i));
+            result = result.replace(arabicDigits[i], (char)('0'+i));
+        }
+        return result;
     }
 
     public static String replaceIfHasArabicCharacter (String input) {

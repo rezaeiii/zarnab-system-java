@@ -1,11 +1,12 @@
 //package com.zarnab.panel;
 //
 //import com.zarnab.panel.clients.service.ShahkarInquiryClient;
+//import lombok.extern.slf4j.Slf4j;
 //import org.springframework.boot.CommandLineRunner;
 //import org.springframework.stereotype.Component;
 //import lombok.RequiredArgsConstructor;
-//import reactor.core.publisher.Mono;
 //
+//@Slf4j
 //@Component
 //@RequiredArgsConstructor
 //public class MobileOwnerVerifierRunner implements CommandLineRunner {
@@ -22,15 +23,8 @@
 //
 //        try {
 //            Boolean matched = clientService.verifyMobileOwner(nationalId, mobileNumber)
-//                    .doOnError(e -> System.err.println("Error during call: " + e.getMessage()))
-//                    .onErrorReturn(false)
+//                    .doOnError(e -> log.error("Failed to deserialize UID response", e))
 //                    .block();
-////            Boolean result = clientService.verifyMobileOwner(nationalId, mobileNumber)
-////                                          .onErrorResume(ex -> {
-////                                              System.err.println("❌ API call failed: " + ex.getMessage());
-////                                              return Mono.just(false);
-////                                          })
-////                                          .block(); // block only here for demo/testing
 //
 //            System.out.println("✅ Verification result = " + matched);
 //        } catch (Exception e) {

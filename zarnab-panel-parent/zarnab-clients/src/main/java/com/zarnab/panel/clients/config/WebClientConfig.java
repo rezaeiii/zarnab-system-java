@@ -5,6 +5,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +21,10 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
 
-import javax.net.ssl.SSLException;
 import java.time.Duration;
 import java.util.Set;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(ClientsConfig.class)
@@ -48,7 +49,9 @@ public class WebClientConfig {
 
         return WebClient.builder()
                 .baseUrl(uidProps.baseUrl())
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
+//                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .filter(logRequest())
+                .filter(logResponse())
 //                .filter(createRetryAndErrorHandlingFilter(properties.retry()))
                 .build();
     }
@@ -79,6 +82,23 @@ public class WebClientConfig {
 
             return responseMono;
         };
+    }
+
+    private ExchangeFilterFunction logRequest() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            log.info("Request: {} {}", clientRequest.method(), clientRequest.url());
+            clientRequest.headers().forEach((name, values) -> values.forEach(value -> log.info("{}={}", name, value)));
+            return Mono.just(clientRequest);
+        });
+    }
+
+    private ExchangeFilterFunction logResponse() {
+        return ExchangeFilterFunction.ofResponseProcessor(clientResponse -> clientResponse.bodyToMono(String.class)
+                .flatMap(body -> {
+                    log.info("Response Body: {}", body);
+                    return Mono.just(clientResponse.mutate().body(body).build());
+                })
+                .switchIfEmpty(Mono.just(clientResponse)));
     }
 
     /**

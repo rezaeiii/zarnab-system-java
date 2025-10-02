@@ -5,11 +5,14 @@ import com.zarnab.panel.clients.dto.MobileOwnerInquiryRequest;
 import com.zarnab.panel.clients.dto.MobileOwnerInquiryResponse;
 import com.zarnab.panel.clients.dto.common.ApiInfo;
 import com.zarnab.panel.clients.dto.common.RequestContext;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 public class ShahkarInquiryClient {
 
@@ -36,6 +39,9 @@ public class ShahkarInquiryClient {
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(MobileOwnerInquiryResponse.class)
-                .map(MobileOwnerInquiryResponse::isMatched);
+                .map(MobileOwnerInquiryResponse::isMatched)
+                .doOnError(e -> log.error("Error during call shahkar: {}", e.getMessage()))
+                .onErrorReturn(false);
+
     }
 }
