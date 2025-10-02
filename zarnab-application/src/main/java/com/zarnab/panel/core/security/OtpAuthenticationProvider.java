@@ -31,7 +31,7 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
         String mobileNumber = authentication.getName();
         String submittedOtp = authentication.getCredentials().toString();
 
-        otpService.verifyOtp(OtpPurpose.AUTH, mobileNumber, submittedOtp);
+        otpService.verifyOtp(OtpPurpose.LOGIN_REGISTRATION, mobileNumber, submittedOtp);
 
         // If OTP is valid, load the user details
         User user = userRepository.findByMobileNumber(mobileNumber)

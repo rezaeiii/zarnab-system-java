@@ -112,7 +112,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal User user) {
         if (user != null) {
-            otpService.clearOtp(OtpPurpose.AUTH, user.getMobileNumber());
+            otpService.clearOtp(OtpPurpose.LOGIN_REGISTRATION, user.getMobileNumber());
         }
         HttpHeaders cookieHeader = cookieHelper.clearRefreshTokenCookie();
         return ResponseEntity.ok()

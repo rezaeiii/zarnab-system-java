@@ -42,7 +42,7 @@ public enum ExceptionType implements IZarnabException {
     // --- Generic & Fallback Errors ---
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 9001, "error.server.internal"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, 9002, "error.user.notFound"),
-    ;
+    INVALID_MOBILE_NATIONAL_SHAHKAR(HttpStatus.BAD_REQUEST, 9003, "error.user.invalidMatchNationalMobile");
 
     private final HttpStatus status;
     private final int code;

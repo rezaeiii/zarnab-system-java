@@ -31,6 +31,11 @@ public enum Role {
     /**
      * A standard user with basic permissions.
      */
-    USER
+    USER;
+
+
+    public String getName() {
+        return this.name();
+    }
 }
 

@@ -128,6 +128,10 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.zarnab.panel</groupId>
+            <artifactId>zarnab-clients</artifactId>
+        </dependency>
 
     </dependencies>
 
