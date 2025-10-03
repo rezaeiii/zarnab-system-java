@@ -17,7 +17,8 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionType implements IZarnabException {
 
     // --- Business Logic Errors (from your services) ---
-    INVALID_OTP(HttpStatus.UNAUTHORIZED, 1001, "error.auth.invalidOtp"),
+    INVALID_OTP(HttpStatus.UNAUTHORIZED, 1000, "error.auth.invalidOtp"),
+    EXPIRE_OTP(HttpStatus.UNAUTHORIZED, 1001, "error.auth.expireOtp"),
     TOKEN_EXPIRED_OR_INVALID(HttpStatus.UNAUTHORIZED, 1002, "error.auth.token.invalid"),
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, 1003, "error.user.alreadyExists"),
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, 2002, "error.auth.otp.cooldown"),
@@ -25,8 +26,10 @@ public enum ExceptionType implements IZarnabException {
     INGOT_OWNERSHIP_ERROR(HttpStatus.FORBIDDEN, 3002, "error.ingot.ownership"),
     TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, 3003, "error.transfer.notFound"),
     TRANSFER_SELLER_MISMATCH(HttpStatus.FORBIDDEN, 3004, "error.transfer.sellerMismatch"),
-    DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3005, "error.ingot.duplicateTheftReport"),
-    THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3006, "error.ingot.theftReportNotFound"),
+    TRANSFER_INVALID_STATUS(HttpStatus.CONFLICT, 3006, "error.transfer.invalidStatus"),
+    TRANSFER_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 3007, "error.transfer.permissionDenied"),
+    DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3008, "error.ingot.duplicateTheftReport"),
+    THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "error.ingot.theftReportNotFound"),
 
 
     // --- Spring Framework & Web Layer Errors ---

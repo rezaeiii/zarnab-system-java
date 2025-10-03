@@ -8,6 +8,7 @@ import com.zarnab.panel.ingot.model.TransferStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class IngotDtos {
 
@@ -61,8 +62,12 @@ public class IngotDtos {
             UserDto seller,
             UserDto buyer,
             String buyerMobileNumber,
-            TransferStatus status
-    ) {
+            TransferStatus status,
+            @FriendlyDate
+            LocalDateTime transferAt,
+            @FriendlyDate
+            LocalDateTime lastUpdateAt
+            ) {
         public static TransferDto from(Transfer transfer) {
             User seller = transfer.getSeller();
             User buyer = transfer.getBuyer();
@@ -73,7 +78,9 @@ public class IngotDtos {
                     new UserDto(seller.getId(), seller.getMobileNumber(), seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getFirstName() : null, seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getLastName() : null),
                     buyer != null ? new UserDto(buyer.getId(), buyer.getMobileNumber(), buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getFirstName() : null, buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getLastName() : null) : null,
                     transfer.getBuyerMobileNumber(),
-                    transfer.getStatus()
+                    transfer.getStatus(),
+                    transfer.getCreatedAt(),
+                    transfer.getUpdatedAt()
             );
         }
     }

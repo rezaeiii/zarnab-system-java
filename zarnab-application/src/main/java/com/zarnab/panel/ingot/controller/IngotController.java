@@ -6,6 +6,7 @@ import com.zarnab.panel.ingot.dto.IngotDtos.IngotResponse;
 import com.zarnab.panel.ingot.service.IngotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,8 @@ public class IngotController {
 	}
 
 	@PostMapping
+	// TODO uncomment
+//	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<IngotResponse> create(@RequestBody IngotCreateRequest request) {
 		return ResponseEntity.ok(ingotService.create(request));
 	}

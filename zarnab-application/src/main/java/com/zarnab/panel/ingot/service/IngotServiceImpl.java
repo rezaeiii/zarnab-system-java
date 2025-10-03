@@ -36,7 +36,6 @@ public class IngotServiceImpl implements IngotService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public IngotResponse create(IngotCreateRequest request) {
         User owner = userRepository.findById(request.ownerId())
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));

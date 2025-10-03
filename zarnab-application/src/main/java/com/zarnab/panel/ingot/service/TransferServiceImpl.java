@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,8 @@ public class TransferServiceImpl implements TransferService {
     private final SmsService smsService;
 
     @Override
-    public void initiateTransfer(InitiateTransferRequest request, String username) {
+    @Transactional
+    public Long initiateTransfer(InitiateTransferRequest request, String username) {
         User seller = userRepository.findByMobileNumber(username)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
         Ingot ingot = ingotRepository.findById(request.getIngotId())
@@ -44,48 +46,74 @@ public class TransferServiceImpl implements TransferService {
             throw new ZarnabException(ExceptionType.INGOT_OWNERSHIP_ERROR);
         }
 
+        // Send OTP to the buyer for the seller to use for verification
         otpService.sendOtp(OtpPurpose.INGOT_TRANSFER, request.getBuyerMobileNumber());
 
         Transfer transfer = Transfer.builder()
                 .ingot(ingot)
                 .seller(seller)
                 .buyerMobileNumber(request.getBuyerMobileNumber())
-                .status(TransferStatus.PENDING)
+                .status(TransferStatus.PENDING_SELLER_VERIFICATION)
                 .build();
+        Transfer save = transferRepository.save(transfer);
 
-        transferRepository.save(transfer);
+        return save.getId();
     }
 
     @Override
     @Transactional
-    public void verifyAndCompleteTransfer(VerifyTransferRequest request, String username) {
+    public IngotDtos.TransferDto verifyTransfer(VerifyTransferRequest request, String username) {
         User seller = userRepository.findByMobileNumber(username)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
         Transfer transfer = transferRepository.findById(request.getTransferId())
                 .orElseThrow(() -> new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND));
 
+        if (transfer.getStatus() != TransferStatus.PENDING_SELLER_VERIFICATION) {
+            throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
+        }
+
         if (!transfer.getSeller().equals(seller)) {
             throw new ZarnabException(ExceptionType.TRANSFER_SELLER_MISMATCH);
         }
 
+        // The seller verifies using the OTP sent to the buyer
         otpService.verifyOtp(OtpPurpose.INGOT_TRANSFER, transfer.getBuyerMobileNumber(), request.getVerificationCode());
 
-        transfer.setStatus(TransferStatus.VERIFIED);
+        User buyer = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber())
+                .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND)); // Or create a new user if they don't exist
 
-        User buyer = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber()).orElse(null);
-
-        if (buyer != null) {
-            transfer.setBuyer(buyer);
-        }
+        transfer.setBuyer(buyer);
+        transfer.setStatus(TransferStatus.COMPLETED);
 
         Ingot ingot = transfer.getIngot();
         ingot.setOwner(buyer);
         ingotRepository.save(ingot);
 
-        transfer.setStatus(TransferStatus.COMPLETED);
-        transferRepository.save(transfer);
+        smsService.sendSms(transfer.getBuyerMobileNumber(), "An ingot has been successfully transferred to you.");
 
-        smsService.sendSms(transfer.getBuyerMobileNumber(), "You have received an ingot");
+        return IngotDtos.TransferDto.from(transferRepository.save(transfer));
+    }
+
+    @Override
+    @Transactional
+    public void cancelTransfer(Long transferId, String username) {
+        User currentUser = userRepository.findByMobileNumber(username)
+                .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+        Transfer transfer = transferRepository.findById(transferId)
+                .orElseThrow(() -> new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND));
+
+        boolean isSeller = transfer.getSeller().equals(currentUser);
+
+        if (!isSeller) {
+            throw new ZarnabException(ExceptionType.TRANSFER_PERMISSION_DENIED);
+        }
+
+        if (transfer.getStatus() != TransferStatus.PENDING_SELLER_VERIFICATION) {
+            throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
+        }
+
+        transfer.setStatus(TransferStatus.CANCELED);
+        transferRepository.save(transfer);
     }
 
     @Override
@@ -101,6 +129,7 @@ public class TransferServiceImpl implements TransferService {
         }
 
         return transfers.stream()
+                .sorted(Comparator.comparing(Transfer::getCreatedAt, Comparator.reverseOrder()))
                 .map(IngotDtos.TransferDto::from)
                 .collect(Collectors.toList());
     }

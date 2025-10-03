@@ -5,6 +5,7 @@ import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
 import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
 import com.zarnab.panel.ingot.service.TransferService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Validated
 @RestController
@@ -22,14 +24,20 @@ public class TransferController {
     private final TransferService transferService;
 
     @PostMapping("/initiate")
-    public ResponseEntity<Void> initiateTransfer(@RequestBody InitiateTransferRequest request, @AuthenticationPrincipal User user) {
-        transferService.initiateTransfer(request, user.getMobileNumber());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String, Long>> initiateTransfer(@Valid @RequestBody InitiateTransferRequest request, @AuthenticationPrincipal User user) {
+        Long transferId = transferService.initiateTransfer(request, user.getMobileNumber());
+        return ResponseEntity.ok(Map.of("transferId", transferId));
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<Void> verifyAndCompleteTransfer(@RequestBody VerifyTransferRequest request, @AuthenticationPrincipal User user) {
-        transferService.verifyAndCompleteTransfer(request, user.getMobileNumber());
+    public ResponseEntity<IngotDtos.TransferDto> verifyTransfer(@Valid @RequestBody VerifyTransferRequest request, @AuthenticationPrincipal User user) {
+        IngotDtos.TransferDto transferDto = transferService.verifyTransfer(request, user.getMobileNumber());
+        return ResponseEntity.ok(transferDto);
+    }
+
+    @PostMapping("/{transferId}/cancel")
+    public ResponseEntity<Void> cancelTransfer(@PathVariable Long transferId, @AuthenticationPrincipal User user) {
+        transferService.cancelTransfer(transferId, user.getMobileNumber());
         return ResponseEntity.ok().build();
     }
 

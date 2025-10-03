@@ -43,9 +43,11 @@ public class RedisOtpService implements OtpService {
     public boolean verifyOtp(OtpPurpose purpose, String mobileNumber, String otp) {
         String otpKey = RedisKeyManager.getOtpKey(purpose.code(), mobileNumber);
         String storedOtp = tokenStore.retrieve(otpKey)
-                .orElseThrow(() -> new BadCredentialsException("Invalid or expired OTP."));
+//                .orElseThrow(() -> new BadCredentialsException("Invalid or expired OTP."));
+                .orElseThrow(() -> new ZarnabException(ExceptionType.INVALID_OTP));
         if (!storedOtp.equals(otp)) {
-            throw new BadCredentialsException("Invalid OTP.");
+            throw new ZarnabException(ExceptionType.INVALID_OTP);
+//            throw new BadCredentialsException("Invalid OTP.");
         }
         tokenStore.consume(otpKey);
         return false;

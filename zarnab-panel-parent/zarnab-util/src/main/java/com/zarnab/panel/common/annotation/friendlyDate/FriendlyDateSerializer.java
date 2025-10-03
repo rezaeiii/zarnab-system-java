@@ -16,7 +16,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 
-import static com.zarnab.panel.common.constants.ConfigConstants.*;
+import static com.zarnab.panel.common.constants.ConfigConstants.FRIENDLY_DATE_KEY_POSTFIX;
 
 
 @Component
@@ -77,6 +77,10 @@ public class FriendlyDateSerializer extends JsonSerializer<TemporalAccessor> {
         return includeTime
                 ? DateUtil.toJalali(localDateTime, pattern)
                 : DateUtil.toJalali(localDateTime.toLocalDate(), pattern);
+//        return result.split(" ").length > 1 ?
+//                result.split(" ")[1] + " " + result.split(" ")[0]
+//                : result;
+
     }
 
     private LocalDateTime toLocalDateTime(TemporalAccessor value, String timeZone) {

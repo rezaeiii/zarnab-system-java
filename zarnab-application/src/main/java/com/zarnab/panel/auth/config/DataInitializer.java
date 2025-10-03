@@ -39,8 +39,20 @@ public class DataInitializer {
                         .enabled(true)
                         .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
                                 .firstName("آرمان")
-                                .lastName("رضایی")
+                                .lastName("حسینی")
                                 .nationalId("0000000000")
+                                .build())
+                        .roles(Set.of(Role.ADMIN, Role.USER, Role.REPRESENTATIVE))
+                        .build());
+
+                User adminUser2 = userRepository.save(User.builder()
+                        .mobileNumber("09102455281")
+                        .profileType(UserProfileType.NATURAL)
+                        .enabled(true)
+                        .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
+                                .firstName("آرمان")
+                                .lastName("حسینی")
+                                .nationalId("1111111111")
                                 .build())
                         .roles(Set.of(Role.ADMIN, Role.USER, Role.REPRESENTATIVE))
                         .build());

@@ -7,7 +7,11 @@ import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
 import java.util.List;
 
 public interface TransferService {
-    void initiateTransfer(InitiateTransferRequest request, String username);
-    void verifyAndCompleteTransfer(VerifyTransferRequest request, String username);
+    Long initiateTransfer(InitiateTransferRequest request, String username);
+
+    IngotDtos.TransferDto verifyTransfer(VerifyTransferRequest request, String username);
+
+    void cancelTransfer(Long transferId, String username);
+
     List<IngotDtos.TransferDto> getTransfers(String username);
 }

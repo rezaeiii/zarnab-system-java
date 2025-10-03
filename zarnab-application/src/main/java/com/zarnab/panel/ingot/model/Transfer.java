@@ -42,8 +42,6 @@ public class Transfer {
     @Column(nullable = false)
     private TransferStatus status;
 
-//    private String verificationCode;
-
     @CreationTimestamp
     private LocalDateTime createdAt;
 
