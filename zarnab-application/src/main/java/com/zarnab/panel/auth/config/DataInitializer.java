@@ -21,7 +21,7 @@ import java.util.Set;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-@Profile(value = {"dev", "docker"})
+@Profile(value = {"dev", "stage"})
 public class DataInitializer {
 
     private final UserRepository userRepository;

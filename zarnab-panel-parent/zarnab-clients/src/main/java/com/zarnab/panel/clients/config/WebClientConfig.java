@@ -2,6 +2,7 @@ package com.zarnab.panel.clients.config;
 
 import com.zarnab.panel.clients.exception.ClientApiException;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
 
+import javax.net.ssl.SSLException;
 import java.time.Duration;
 import java.util.Set;
 
@@ -43,16 +45,39 @@ public class WebClientConfig {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, uidProps.timeoutMs())
                 .responseTimeout(Duration.ofMillis(uidProps.timeoutMs()));
-//                .doOnConnected(conn -> conn
-//                        .addHandlerLast(new ReadTimeoutHandler(uidProps.timeoutMs(), TimeUnit.MILLISECONDS))
-//                        .addHandlerLast(new WriteTimeoutHandler(uidProps.timeoutMs(), TimeUnit.MILLISECONDS)));
 
         return WebClient.builder()
                 .baseUrl(uidProps.baseUrl())
-//                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .filter(logRequest())
                 .filter(logResponse())
-//                .filter(createRetryAndErrorHandlingFilter(properties.retry()))
+                .filter(createRetryAndErrorHandlingFilter(properties.retry()))
+                .build();
+    }
+
+
+    @Bean
+    public WebClient smsWebClient(ClientsConfig properties) throws SSLException {
+        ClientsConfig.Sms smsProps = properties.sms();
+
+        SslContext sslContext = SslContextBuilder
+                .forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .build();
+
+        HttpClient httpClient = HttpClient.create()
+                .secure(t -> t.sslContext(sslContext))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, smsProps.timeoutMs())
+                .responseTimeout(Duration.ofMillis(smsProps.timeoutMs()));
+
+        return WebClient.builder()
+                .baseUrl(smsProps.baseUrl())
+                .defaultHeader("X-API-KEY", smsProps.apiKey())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                .defaultHeader(HttpHeaders.ACCEPT, "text/plain")
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .filter(logRequest())
+                .filter(logResponse())
                 .build();
     }
 
@@ -101,10 +126,6 @@ public class WebClientConfig {
                 .switchIfEmpty(Mono.just(clientResponse)));
     }
 
-    /**
-     * Helper method to determine if an exception is a candidate for retrying.
-     * We retry on 5xx server exceptions and on network exceptions.
-     */
     private boolean isRetryableException(Throwable throwable) {
         return throwable instanceof ClientApiException.Client5xxException ||
                throwable instanceof WebClientRequestException;

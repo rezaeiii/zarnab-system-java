@@ -1,5 +1,7 @@
 package com.zarnab.panel.auth.service.sms;
 
+import com.zarnab.panel.clients.sms.SmsServiceClient;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -12,16 +14,17 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@Profile(value = {"dev", "docker"}) // This bean will only be created when the 'dev' profile is active
+@Profile(value = {"dev"})
+@RequiredArgsConstructor
 public class ConsoleSmsService implements SmsService {
+
+    private final SmsServiceClient smsServiceClient;
 
     @Override
     public void sendSms(String mobileNumber, String message) {
-        // In a real application, this would connect to an SMS gateway like Twilio.
-        // For development, we simply print the message to the console.
-        log.info("--- SIMULATED SMS ---");
-        log.info("To: {}", mobileNumber);
-        log.info("Message: {}", message);
-        log.info("---------------------");
+        smsServiceClient.send(mobileNumber, message)
+                .doOnSuccess(response -> log.info("SMS sent successfully to {}: {}", mobileNumber, response.message()))
+                .doOnError(e -> log.error("Failed to send SMS to {}: {}", mobileNumber, e.getMessage()))
+                .subscribe();
     }
 }

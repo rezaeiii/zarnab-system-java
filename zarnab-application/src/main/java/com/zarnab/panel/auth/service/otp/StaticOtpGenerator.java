@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.security.SecureRandom;
 
 @Component
-@Profile(value = {"dev", "docker"})
+@Profile(value = {"dev", "stage"})
 public class StaticOtpGenerator implements OtpGenerator {
 
     @Override

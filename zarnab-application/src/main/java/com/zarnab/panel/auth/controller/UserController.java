@@ -30,6 +30,11 @@ public class UserController {
         return ResponseEntity.ok(authService.createUser(request));
     }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserManagementDtos.UserResponse> loadUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.loadUser(userId));
+    }
+
     @PutMapping("/{userId}")
     public ResponseEntity<UserManagementDtos.UserResponse> updateUser(@PathVariable Long userId, @Valid @RequestBody UserManagementDtos.UpdateUserRequest request) {
         return ResponseEntity.ok(authService.updateUser(userId, request));

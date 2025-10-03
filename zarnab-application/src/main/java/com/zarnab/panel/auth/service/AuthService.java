@@ -27,6 +27,8 @@ public interface AuthService {
 
     UserManagementDtos.UserResponse createUser(UserManagementDtos.CreateUserRequest request);
 
+    UserManagementDtos.UserResponse loadUser(Long userId);
+
     UserManagementDtos.UserResponse updateUser(Long userId, UserManagementDtos.UpdateUserRequest request);
 
     void deleteUser(Long userId);

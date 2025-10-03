@@ -1,5 +1,7 @@
 package com.zarnab.panel.auth.service.sms;
 
+import com.zarnab.panel.clients.sms.SmsServiceClient;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -11,21 +13,17 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@Profile("prod")
+@Profile(value = {"stage"})
+@RequiredArgsConstructor
 public class RealSmsService implements SmsService {
+
+    private final SmsServiceClient smsServiceClient;
 
     @Override
     public void sendSms(String mobileNumber, String message) {
-        // In a real application, you would add the integration logic here.
-        // For example, using the Twilio SDK:
-        // Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-        // Message.creator(
-        //      new com.twilio.type.PhoneNumber(mobileNumber),
-        //      new com.twilio.type.PhoneNumber(TWILIO_NUMBER),
-        //      message)
-        // .create();
-
-        log.error("PRODUCTION SMS PROVIDER IS NOT CONFIGURED. SMS for {} was not sent.", mobileNumber);
-        log.info("[PRODUCTION SMS STUB] To: {}. Message: {}", mobileNumber, message);
+        smsServiceClient.send(mobileNumber, message)
+                .doOnSuccess(response -> log.info("SMS sent successfully to {}: {}", mobileNumber, response.message()))
+                .doOnError(e -> log.error("Failed to send SMS to {}: {}", mobileNumber, e.getMessage()))
+                .subscribe();
     }
 }

@@ -28,7 +28,7 @@ public class CookieHelper {
      * @return The HttpHeaders object containing the Set-Cookie header.
      */
     public HttpHeaders createRefreshTokenCookie(String refreshToken) {
-        List<String> devs = Arrays.asList("dev", "docker-dev");
+        List<String> devs = Arrays.asList("dev");
         boolean isDevProfile = Arrays.stream(activeProfiles).anyMatch(devs::contains);
 
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
@@ -52,10 +52,10 @@ public class CookieHelper {
     public HttpHeaders clearRefreshTokenCookie() {
         ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(!Arrays.stream(activeProfiles).anyMatch(p -> p.equals("dev") || p.equals("docker-dev")))
+                .secure(!Arrays.stream(activeProfiles).anyMatch(p -> p.equals("dev")))
                 .path("/")
                 .maxAge(0)
-                .sameSite(Arrays.stream(activeProfiles).anyMatch(p -> p.equals("dev") || p.equals("docker-dev")) ? "Lax" : "Strict")
+                .sameSite(Arrays.stream(activeProfiles).anyMatch(p -> p.equals("dev")) ? "Lax" : "Strict")
                 .build();
 
         HttpHeaders headers = new HttpHeaders();

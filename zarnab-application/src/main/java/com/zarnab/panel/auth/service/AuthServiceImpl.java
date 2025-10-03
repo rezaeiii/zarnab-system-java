@@ -157,6 +157,14 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public UserManagementDtos.UserResponse loadUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
+        return UserManagementDtos.UserResponse.from(user);
+    }
+
+    @Override
     @Transactional
     public UserManagementDtos.UserResponse updateUser(Long userId, UserManagementDtos.UpdateUserRequest request) {
         User user = userRepository.findById(userId)
