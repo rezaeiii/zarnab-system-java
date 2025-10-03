@@ -69,7 +69,6 @@ services:
 #    container_name: zarnab_frontend
 #    networks:
 #      - zarnab-network
-
   nginx:
     build: ../../../frontend
     container_name: zarnab_nginx
