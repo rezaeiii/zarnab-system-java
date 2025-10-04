@@ -1,7 +1,5 @@
 package com.zarnab.panel.profile.dto;
 
-import org.springframework.web.multipart.MultipartFile;
-
 public class ProfileDtos {
 
     public record InitiateChangeMobileRequest(

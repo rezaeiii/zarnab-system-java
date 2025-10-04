@@ -62,11 +62,23 @@ public class DataInitializer {
                         .enabled(true)
                         .profileType(UserProfileType.NATURAL)
                         .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
-                                .firstName("شایان")
+                                .firstName("مشتری")
                                 .lastName("رمضی")
                                 .nationalId("0000000000")
                                 .build())
-                        .roles(Set.of(Role.USER, Role.COUNTER))
+                        .roles(Set.of(Role.COUNTER))
+                        .build());
+
+                userRepository.save(User.builder()
+                        .mobileNumber("09222222222")
+                        .enabled(true)
+                        .profileType(UserProfileType.NATURAL)
+                        .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
+                                .firstName("کانتر")
+                                .lastName("رمضی")
+                                .nationalId("2222222222")
+                                .build())
+                        .roles(Set.of(Role.COUNTER))
                         .build());
                 log.info("Database seeding complete.");
 
