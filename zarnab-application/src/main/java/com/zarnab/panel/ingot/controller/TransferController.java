@@ -4,6 +4,7 @@ import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
 import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
+import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
 import com.zarnab.panel.ingot.service.TransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Validated
 @RestController
@@ -24,9 +24,8 @@ public class TransferController {
     private final TransferService transferService;
 
     @PostMapping("/initiate")
-    public ResponseEntity<Map<String, Long>> initiateTransfer(@Valid @RequestBody InitiateTransferRequest request, @AuthenticationPrincipal User user) {
-        Long transferId = transferService.initiateTransfer(request, user.getMobileNumber());
-        return ResponseEntity.ok(Map.of("transferId", transferId));
+    public ResponseEntity<InitiateTransferResponse> initiateTransfer(@Valid @RequestBody InitiateTransferRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(transferService.initiateTransfer(request, user.getMobileNumber()));
     }
 
     @PostMapping("/verify")

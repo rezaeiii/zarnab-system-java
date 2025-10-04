@@ -1,5 +1,6 @@
 package com.zarnab.panel.ingot.service;
 
+import com.zarnab.panel.auth.dto.UserManagementDtos;
 import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.repository.UserRepository;
@@ -11,10 +12,13 @@ import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
 import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
+import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
 import com.zarnab.panel.ingot.model.Ingot;
+import com.zarnab.panel.ingot.model.TheftReportStatus;
 import com.zarnab.panel.ingot.model.Transfer;
 import com.zarnab.panel.ingot.model.TransferStatus;
 import com.zarnab.panel.ingot.repository.IngotRepository;
+import com.zarnab.panel.ingot.repository.TheftReportRepository;
 import com.zarnab.panel.ingot.repository.TransferRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,19 +35,28 @@ public class TransferServiceImpl implements TransferService {
     private final IngotRepository ingotRepository;
     private final UserRepository userRepository;
     private final TransferRepository transferRepository;
+    private final TheftReportRepository theftReportRepository;
     private final OtpService otpService;
     private final SmsService smsService;
 
     @Override
     @Transactional
-    public Long initiateTransfer(InitiateTransferRequest request, String username) {
+    public InitiateTransferResponse initiateTransfer(InitiateTransferRequest request, String username) {
         User seller = userRepository.findByMobileNumber(username)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+
+        User buyer = userRepository.findByMobileNumber(request.getBuyerMobileNumber())
+                .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+
         Ingot ingot = ingotRepository.findById(request.getIngotId())
                 .orElseThrow(() -> new ZarnabException(ExceptionType.INGOT_NOT_FOUND));
 
-        if (!ingot.getOwner().equals(seller)) {
+        if (!ingot.getOwner().getId().equals(seller.getId())) {
             throw new ZarnabException(ExceptionType.INGOT_OWNERSHIP_ERROR);
+        }
+
+        if (theftReportRepository.existsByIngotAndStatusIn(ingot, List.of(TheftReportStatus.PENDING, TheftReportStatus.APPROVED))) {
+            throw new ZarnabException(ExceptionType.INGOT_IS_STOLEN);
         }
 
         // Send OTP to the buyer for the seller to use for verification
@@ -57,7 +70,7 @@ public class TransferServiceImpl implements TransferService {
                 .build();
         Transfer save = transferRepository.save(transfer);
 
-        return save.getId();
+        return new InitiateTransferResponse(save.getId(), UserManagementDtos.UserResponse.from(buyer));
     }
 
     @Override

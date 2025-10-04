@@ -89,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
         User newUser = User.builder()
                 .mobileNumber(mobileNumber)
                 .enabled(true)
-                .roles(Set.of(Role.USER, Role.REPRESENTATIVE))
+                .roles(Set.of(Role.USER))
                 .profileType(UserProfileType.NATURAL)
                 .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
                         .firstName(request.firstName())
