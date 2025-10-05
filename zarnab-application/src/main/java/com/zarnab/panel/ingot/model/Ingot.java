@@ -1,25 +1,21 @@
 package com.zarnab.panel.ingot.model;
 
 import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.core.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "ingots")
-@Data
-@Builder
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ingot {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class Ingot extends BaseEntity {
 
 	// سریال
 	@Column(nullable = false, unique = true)
@@ -38,7 +34,7 @@ public class Ingot {
 	private Double weightGrams;
 
 	// مالک
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "owner_id")
 	private User owner;
 } 

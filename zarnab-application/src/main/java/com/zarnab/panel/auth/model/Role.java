@@ -23,15 +23,9 @@ public enum Role {
     COUNTER,
 
     /**
-     * A first-hand buyer.
-     * (خریدار دست اول)
-     */
-    BUYER,
-
-    /**
      * A standard user with basic permissions.
      */
-    USER;
+    CUSTOMER;
 
 
     public String getName() {

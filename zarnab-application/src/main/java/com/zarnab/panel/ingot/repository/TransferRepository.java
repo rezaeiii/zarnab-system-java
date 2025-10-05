@@ -18,4 +18,6 @@ public interface TransferRepository extends JpaRepository<Transfer, Long> {
 
     List<Transfer> findAllByStatusInAndCreatedAtBefore(Collection<TransferStatus> statuses, LocalDateTime createdAt);
 
+    long countByCreatedAtAfter(LocalDateTime createdAt);
+
 }

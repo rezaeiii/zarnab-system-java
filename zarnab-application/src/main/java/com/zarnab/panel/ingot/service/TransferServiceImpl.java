@@ -9,6 +9,7 @@ import com.zarnab.panel.auth.service.otp.OtpService;
 import com.zarnab.panel.auth.service.sms.SmsService;
 import com.zarnab.panel.common.exception.ZarnabException;
 import com.zarnab.panel.core.exception.ExceptionType;
+import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
 import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
@@ -28,6 +29,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.zarnab.panel.common.translate.Translator.translate;
+
 @Service
 @RequiredArgsConstructor
 public class TransferServiceImpl implements TransferService {
@@ -42,17 +45,36 @@ public class TransferServiceImpl implements TransferService {
     @Override
     @Transactional
     public InitiateTransferResponse initiateTransfer(InitiateTransferRequest request, String username) {
+
         User seller = userRepository.findByMobileNumber(username)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
-        User buyer = userRepository.findByMobileNumber(request.getBuyerMobileNumber())
-                .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+        User buyer = null;
+        if (request.getBuyerMobileNumber() != null && !request.getToZarnab()) {
+            buyer = userRepository.findByMobileNumber(request.getBuyerMobileNumber())
+                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+            if (RoleUtil.hasRole(buyer, Role.ADMIN, Role.COUNTER)) {
+                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
+            }
+        }
 
         Ingot ingot = ingotRepository.findById(request.getIngotId())
                 .orElseThrow(() -> new ZarnabException(ExceptionType.INGOT_NOT_FOUND));
 
-        if (!ingot.getOwner().getId().equals(seller.getId())) {
+        boolean isAdminOrCounter = RoleUtil.hasRole(seller, Role.ADMIN, Role.COUNTER);
+        // if seller user is counter or admin dont need to check ownership
+        if (!isAdminOrCounter
+            && !ingot.getOwner().getId().equals(seller.getId())) {
             throw new ZarnabException(ExceptionType.INGOT_OWNERSHIP_ERROR);
+        }
+
+        if ((buyer == null && ingot.getOwner() == null) || (buyer != null
+                                                            && ingot.getOwner() != null
+                                                            && buyer.getId().equals(ingot.getOwner().getId()))) {
+            String name = buyer != null
+                    ? buyer.getNaturalPersonProfile().getFirstName() + " " + buyer.getNaturalPersonProfile().getLastName()
+                    : "زرناب";
+            throw new ZarnabException(ExceptionType.INGOT_ALREADY_OWNERSHIP, name);
         }
 
         if (theftReportRepository.existsByIngotAndStatusIn(ingot, List.of(TheftReportStatus.PENDING, TheftReportStatus.APPROVED))) {
@@ -60,11 +82,11 @@ public class TransferServiceImpl implements TransferService {
         }
 
         // Send OTP to the buyer for the seller to use for verification
-        otpService.sendOtp(OtpPurpose.INGOT_TRANSFER, request.getBuyerMobileNumber());
+        otpService.sendOtp(OtpPurpose.INGOT_TRANSFER, seller.getMobileNumber());
 
         Transfer transfer = Transfer.builder()
                 .ingot(ingot)
-                .seller(seller)
+                .seller(isAdminOrCounter ? null : seller)
                 .buyerMobileNumber(request.getBuyerMobileNumber())
                 .status(TransferStatus.PENDING_SELLER_VERIFICATION)
                 .build();
@@ -85,15 +107,19 @@ public class TransferServiceImpl implements TransferService {
             throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
         }
 
-        if (!transfer.getSeller().equals(seller)) {
+        boolean isAdminOrCounter = RoleUtil.hasRole(seller, Role.ADMIN, Role.COUNTER);
+
+        if (!isAdminOrCounter && !transfer.getSeller().getId().equals(seller.getId())) {
             throw new ZarnabException(ExceptionType.TRANSFER_SELLER_MISMATCH);
         }
 
         // The seller verifies using the OTP sent to the buyer
-        otpService.verifyOtp(OtpPurpose.INGOT_TRANSFER, transfer.getBuyerMobileNumber(), request.getVerificationCode());
-
-        User buyer = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber())
-                .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND)); // Or create a new user if they don't exist
+        otpService.verifyOtp(OtpPurpose.INGOT_TRANSFER, seller.getMobileNumber(), request.getVerificationCode());
+        User buyer = null;
+        if (transfer.getBuyerMobileNumber() != null) {
+            buyer = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber())
+                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+        }
 
         transfer.setBuyer(buyer);
         transfer.setStatus(TransferStatus.COMPLETED);
@@ -102,7 +128,8 @@ public class TransferServiceImpl implements TransferService {
         ingot.setOwner(buyer);
         ingotRepository.save(ingot);
 
-        smsService.sendSms(transfer.getBuyerMobileNumber(), "An ingot has been successfully transferred to you.");
+        if (transfer.getBuyerMobileNumber() != null)
+            smsService.sendSms(transfer.getBuyerMobileNumber(), translate("transfer.success", transfer.getBuyerMobileNumber()));
 
         return IngotDtos.TransferDto.from(transferRepository.save(transfer));
     }
@@ -134,8 +161,9 @@ public class TransferServiceImpl implements TransferService {
         User user = userRepository.findByMobileNumber(username)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
+        boolean isAdminOrCounter = RoleUtil.hasRole(user, Role.ADMIN, Role.COUNTER);
         List<Transfer> transfers;
-        if (user.getRoles().stream().anyMatch(role -> role.equals(Role.ADMIN))) {
+        if (isAdminOrCounter) {
             transfers = transferRepository.findAll();
         } else {
             transfers = transferRepository.findAllBySellerOrBuyer(user, user);

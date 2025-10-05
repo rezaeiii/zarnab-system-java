@@ -42,7 +42,7 @@ public class DataInitializer {
                                 .lastName("حسینی")
                                 .nationalId("0000000000")
                                 .build())
-                        .roles(Set.of(Role.ADMIN, Role.USER, Role.REPRESENTATIVE))
+                        .roles(Set.of(Role.ADMIN, Role.CUSTOMER, Role.REPRESENTATIVE))
                         .build());
 
                 User adminUser2 = userRepository.save(User.builder()
@@ -54,11 +54,11 @@ public class DataInitializer {
                                 .lastName("حسینی")
                                 .nationalId("1111111111")
                                 .build())
-                        .roles(Set.of(Role.ADMIN, Role.USER, Role.REPRESENTATIVE))
+                        .roles(Set.of(Role.ADMIN, Role.CUSTOMER, Role.REPRESENTATIVE))
                         .build());
 
                 userRepository.save(User.builder()
-                        .mobileNumber("09111111111")
+                        .mobileNumber("09999999997")
                         .enabled(true)
                         .profileType(UserProfileType.NATURAL)
                         .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
@@ -66,11 +66,11 @@ public class DataInitializer {
                                 .lastName("رمضی")
                                 .nationalId("0000000000")
                                 .build())
-                        .roles(Set.of(Role.COUNTER))
+                        .roles(Set.of(Role.CUSTOMER))
                         .build());
 
                 userRepository.save(User.builder()
-                        .mobileNumber("09222222222")
+                        .mobileNumber("09999999998")
                         .enabled(true)
                         .profileType(UserProfileType.NATURAL)
                         .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
@@ -83,10 +83,11 @@ public class DataInitializer {
                 log.info("Database seeding complete.");
 
             }
+
             User user = userRepository.findByMobileNumber("09999999999").orElseThrow();
 
             log.info("Seeding database with sample ingots...");
-            boolean alreadyInit = !ingotRepository.findByOwnerId(user.getId()).isEmpty();
+            boolean alreadyInit = !ingotRepository.findBySerial("ZRN-INGOT-001").isEmpty();
             if (!alreadyInit) {
                 for (int i = 1; i <= 5; i++) {
                     ingotRepository.save(Ingot.builder()
@@ -94,7 +95,7 @@ public class DataInitializer {
                             .manufactureDate(LocalDate.now())
                             .karat(24)
                             .weightGrams(100.0 * i)
-                            .owner(user)
+//                            .owner(user)
                             .build());
                 }
                 log.info("Ingot seeding complete.");

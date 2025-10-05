@@ -26,6 +26,12 @@ public class IngotController {
 		return ResponseEntity.ok(ingotService.list(user));
 	}
 
+	@GetMapping("all")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<List<IngotResponse>> listAll(@AuthenticationPrincipal User user) {
+		return ResponseEntity.ok(ingotService.list(user));
+	}
+
 	@PostMapping
 	// TODO uncomment
 //	@PreAuthorize("hasRole('ADMIN')")

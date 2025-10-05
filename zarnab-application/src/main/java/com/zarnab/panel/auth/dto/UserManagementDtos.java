@@ -20,6 +20,7 @@ public class UserManagementDtos {
             Set<Role> roles
     ) {
         public static UserResponse from(User user) {
+            if (user == null) return null;
             return new UserResponse(
                     user.getId(),
                     user.getMobileNumber(),

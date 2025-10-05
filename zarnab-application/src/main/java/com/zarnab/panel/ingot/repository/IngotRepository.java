@@ -16,4 +16,7 @@ public interface IngotRepository extends JpaRepository<Ingot, Long> {
 
     Optional<Ingot> findBySerial(String serial);
 
+    boolean existsBySerial(String serial);
+
+    List<Ingot> findByOwnerIdOrOwnerIdIsNull(Long id);
 }

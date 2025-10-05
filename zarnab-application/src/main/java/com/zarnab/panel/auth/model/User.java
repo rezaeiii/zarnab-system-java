@@ -1,24 +1,20 @@
 package com.zarnab.panel.auth.model;
 
+import com.zarnab.panel.core.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
-@Builder
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+public class User extends BaseEntity {
 
     @Column(unique = true, nullable = false)
     private String mobileNumber;

@@ -20,9 +20,9 @@ public class IngotDtos {
             @Schema(description = "Karat (purity)")
             Integer karat,
             @Schema(description = "Weight in grams")
-            Double weightGrams,
-            @Schema(description = "Owner userId (only admin can set)")
-            Long ownerId
+            Double weightGrams
+//            @Schema(description = "Owner userId (only admin can set)")
+//            Long ownerId
     ) {
     }
 
@@ -36,16 +36,23 @@ public class IngotDtos {
             UserDto owner
     ) {
         public static IngotResponse from(Ingot ingot) {
-            User user = ingot.getOwner();
-            String firstName = user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getFirstName() : null;
-            String lastName = user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getLastName() : null;
+            User owner = ingot.getOwner();
+            String firstName = "", lastName = "", mobileNumber = "";
+            Long ownerId = null;
+            if (owner != null) {
+                ownerId = owner.getId();
+                firstName = owner.getNaturalPersonProfile() != null ? owner.getNaturalPersonProfile().getFirstName() : null;
+                lastName = owner.getNaturalPersonProfile() != null ? owner.getNaturalPersonProfile().getLastName() : null;
+                mobileNumber = owner.getMobileNumber();
+            }
+
             return new IngotResponse(
                     ingot.getId(),
                     ingot.getSerial(),
                     ingot.getManufactureDate(),
                     ingot.getKarat(),
                     ingot.getWeightGrams(),
-                    new UserDto(ingot.getOwner().getId(), ingot.getOwner().getMobileNumber(), firstName, lastName)
+                    new UserDto(ownerId, mobileNumber, firstName, lastName)
             );
         }
     }
@@ -67,7 +74,7 @@ public class IngotDtos {
             LocalDateTime transferAt,
             @FriendlyDate
             LocalDateTime lastUpdateAt
-            ) {
+    ) {
         public static TransferDto from(Transfer transfer) {
             User seller = transfer.getSeller();
             User buyer = transfer.getBuyer();
@@ -75,7 +82,7 @@ public class IngotDtos {
             return new TransferDto(
                     transfer.getId(),
                     IngotResponse.from(transfer.getIngot()),
-                    new UserDto(seller.getId(), seller.getMobileNumber(), seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getFirstName() : null, seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getLastName() : null),
+                    seller != null ? new UserDto(seller.getId(), seller.getMobileNumber(), seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getFirstName() : null, seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getLastName() : null) : null,
                     buyer != null ? new UserDto(buyer.getId(), buyer.getMobileNumber(), buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getFirstName() : null, buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getLastName() : null) : null,
                     transfer.getBuyerMobileNumber(),
                     transfer.getStatus(),

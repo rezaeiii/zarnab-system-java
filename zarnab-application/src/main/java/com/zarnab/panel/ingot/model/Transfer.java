@@ -1,11 +1,13 @@
 package com.zarnab.panel.ingot.model;
 
 import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,25 +15,22 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transfers")
-@Data
-@Builder
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transfer {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Transfer extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ingot_id")
     private Ingot ingot;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
     private User seller;
 
-    @Column(nullable = false)
+    @Column
     private String buyerMobileNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -42,9 +41,4 @@ public class Transfer {
     @Column(nullable = false)
     private TransferStatus status;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 }

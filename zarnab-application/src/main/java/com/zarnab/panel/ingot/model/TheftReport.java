@@ -1,23 +1,18 @@
 package com.zarnab.panel.ingot.model;
 
 import com.zarnab.panel.auth.model.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import com.zarnab.panel.core.entity.BaseEntity;
 import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-@Data
-@Builder
+@Getter
+@Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TheftReport {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class TheftReport extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "ingot_id", nullable = false)

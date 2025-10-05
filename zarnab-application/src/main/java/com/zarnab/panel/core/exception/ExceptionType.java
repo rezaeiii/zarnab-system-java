@@ -23,7 +23,9 @@ public enum ExceptionType implements IZarnabException {
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, 1003, "error.user.alreadyExists"),
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, 2002, "error.auth.otp.cooldown"),
     INGOT_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "error.ingot.notFound"),
+    INGOT_ALREADY_EXISTS(HttpStatus.CONFLICT, 3002, "error.ingot.alreadyExists"),
     INGOT_OWNERSHIP_ERROR(HttpStatus.FORBIDDEN, 3002, "error.ingot.ownership"),
+    INGOT_ALREADY_OWNERSHIP(HttpStatus.CONFLICT, 3002, "error.ingot.alreadyOwnership"),
     INGOT_IS_STOLEN(HttpStatus.FORBIDDEN, 3003, "error.ingot.isStolen"),
     TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, 3004, "error.transfer.notFound"),
     TRANSFER_SELLER_MISMATCH(HttpStatus.FORBIDDEN, 3005, "error.transfer.sellerMismatch"),
@@ -31,7 +33,7 @@ public enum ExceptionType implements IZarnabException {
     TRANSFER_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 3007, "error.transfer.permissionDenied"),
     DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3008, "error.ingot.duplicateTheftReport"),
     THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "error.ingot.theftReportNotFound"),
-
+    INVALID_TRANSFER_BUYER(HttpStatus.BAD_REQUEST, 3009, "error.transfer.invalidBuyer"),
 
     // --- Spring Framework & Web Layer Errors ---
     VALIDATION_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, 4001, "error.validation.failed"),
