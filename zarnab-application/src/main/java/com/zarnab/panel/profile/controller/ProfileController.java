@@ -1,8 +1,5 @@
 package com.zarnab.panel.profile.controller;
 
-import com.zarnab.panel.auth.dto.LoginResult;
-import com.zarnab.panel.auth.dto.req.RegisterRequest;
-import com.zarnab.panel.auth.dto.res.VerifyOtpResponse;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.common.annotation.fileValidator.FileConstraint;
 import com.zarnab.panel.profile.dto.ProfileDtos;
@@ -38,9 +35,11 @@ public class ProfileController {
     @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Void> updateProfile(@RequestParam("firstName") String firstName,
                                               @RequestParam("lastName") String lastName,
+                                              @RequestParam("postalCode") String postalCode,
+                                              @RequestParam("address") String address,
                                               @FileConstraint(maxFiles = 1) @RequestPart(name = "nationalIdImage", required = false) MultipartFile nationalIdImage,
                                               @AuthenticationPrincipal User user) {
-        ProfileDtos.UpdateProfileRequest req = new ProfileDtos.UpdateProfileRequest(firstName, lastName);
+        ProfileDtos.UpdateProfileRequest req = new ProfileDtos.UpdateProfileRequest(firstName, lastName, postalCode, address);
         profileService.updateProfile(req, nationalIdImage, user);
         return ResponseEntity.ok().build();
     }

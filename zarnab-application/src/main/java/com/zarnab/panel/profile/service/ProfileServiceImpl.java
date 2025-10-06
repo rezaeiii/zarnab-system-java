@@ -56,6 +56,8 @@ public class ProfileServiceImpl implements ProfileService {
                 fileStorageService.removeFile(oldImage);
         }
 
+        user.setAddress(request.address());
+        user.setPostalCode(request.postalCode());
         userRepository.save(user);
     }
 }

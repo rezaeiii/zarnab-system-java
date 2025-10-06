@@ -77,6 +77,8 @@ public class AuthController {
             @RequestParam("nationalId") String nationalId,
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
+            @RequestParam("postalCode") String postalCode,
+            @RequestParam("address") String address,
             @RequestParam("registrationToken") String registrationToken
     ) {
         RegisterRequest request = new RegisterRequest(registrationToken, firstName, lastName, nationalId);

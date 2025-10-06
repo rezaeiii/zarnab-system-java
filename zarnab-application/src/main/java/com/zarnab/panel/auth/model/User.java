@@ -28,7 +28,6 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private Set<Role> roles;
 
-    // Common fields
     private String address;
     private String postalCode;
     private String city;

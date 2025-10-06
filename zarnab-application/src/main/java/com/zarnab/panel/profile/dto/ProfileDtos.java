@@ -15,7 +15,9 @@ public class ProfileDtos {
 
     public record UpdateProfileRequest(
             String firstName,
-            String lastName
+            String lastName,
+            String postalCode,
+            String address
     ) {
     }
 }
