@@ -79,6 +79,10 @@ public class AuthServiceImpl implements AuthService {
             throw new ZarnabException(ExceptionType.USER_ALREADY_EXISTS);
         }
 
+        if (userRepository.existsByNationalId(request.nationalId())) {
+            throw new ZarnabException(ExceptionType.NATIONAL_ID_ALREADY_EXISTS);
+        }
+
         if (Boolean.FALSE.equals(shahkarClient.verifyMobileOwner(request.nationalId(), mobileNumber).block())) {
             throw new ZarnabException(ExceptionType.INVALID_MOBILE_NATIONAL_SHAHKAR);
         }

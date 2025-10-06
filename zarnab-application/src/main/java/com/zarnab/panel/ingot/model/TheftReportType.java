@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum TheftReportType {
     THEFT("سرقت"),
-    MISSING("مفقودی");
+    MISSING("مفقودی"),
+    TAMPERING("مخدوشی");
 
     private final String persianDescription;
 

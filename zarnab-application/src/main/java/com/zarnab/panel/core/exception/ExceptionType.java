@@ -33,9 +33,9 @@ public enum ExceptionType implements IZarnabException {
     TRANSFER_SELLER_MISMATCH(HttpStatus.FORBIDDEN, 3005, "error.transfer.sellerMismatch"),
     TRANSFER_INVALID_STATUS(HttpStatus.CONFLICT, 3006, "error.transfer.invalidStatus"),
     TRANSFER_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 3007, "error.transfer.permissionDenied"),
-    DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3008, "error.ingot.duplicateTheftReport"),
-    THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "error.ingot.theftReportNotFound"),
-    INVALID_THEFT_REPORT(HttpStatus.BAD_REQUEST, 3009, "error.theft.invalidTheftReport"),
+    DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3008, "error.ingot.duplicateIssueReport"),
+    THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "error.ingot.IssueReportNotFound"),
+    INVALID_THEFT_REPORT(HttpStatus.BAD_REQUEST, 3009, "error.theft.invalidIssueReport"),
     INVALID_TRANSFER_BUYER(HttpStatus.BAD_REQUEST, 3009, "error.transfer.invalidBuyer"),
 
     // --- Spring Framework & Web Layer Errors ---

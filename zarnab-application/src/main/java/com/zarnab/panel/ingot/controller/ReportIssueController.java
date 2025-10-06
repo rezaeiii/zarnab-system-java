@@ -14,9 +14,9 @@ import java.util.List;
 
 @Validated
 @RestController
-@RequestMapping("/api/theft-reports")
+@RequestMapping("/api/report-issue")
 @RequiredArgsConstructor
-public class TheftReportController {
+public class ReportIssueController {
 
     private final TheftReportService theftReportService;
 
