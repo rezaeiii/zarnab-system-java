@@ -1,8 +1,11 @@
 package com.zarnab.panel.ingot.dto;
 
+import com.zarnab.panel.common.annotation.friendlyDate.FriendlyDate;
 import com.zarnab.panel.ingot.model.TheftReport;
 import com.zarnab.panel.ingot.model.TheftReportStatus;
 import com.zarnab.panel.ingot.model.TheftReportType;
+
+import java.time.LocalDateTime;
 
 public class TheftReportDtos {
 
@@ -19,6 +22,8 @@ public class TheftReportDtos {
             IngotDtos.UserDto reporter,
             TheftReportType type,
             String description,
+            @FriendlyDate
+            LocalDateTime reportDate,
             TheftReportStatus status
     ) {
         public static TheftReportResponse from(TheftReport theftReport) {
@@ -33,6 +38,7 @@ public class TheftReportDtos {
                     ),
                     theftReport.getType(),
                     theftReport.getDescription(),
+                    theftReport.getCreatedAt(),
                     theftReport.getStatus()
             );
         }

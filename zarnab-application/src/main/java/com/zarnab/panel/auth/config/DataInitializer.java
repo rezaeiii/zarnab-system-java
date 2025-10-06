@@ -5,6 +5,8 @@ import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.model.UserProfileType;
 import com.zarnab.panel.auth.repository.UserRepository;
+import com.zarnab.panel.common.exception.ZarnabException;
+import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.ingot.model.Ingot;
 import com.zarnab.panel.ingot.repository.IngotRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +66,7 @@ public class DataInitializer {
                         .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
                                 .firstName("مشتری")
                                 .lastName("رمضی")
-                                .nationalId("0000000000")
+                                .nationalId("0000000001")
                                 .build())
                         .roles(Set.of(Role.CUSTOMER))
                         .build());

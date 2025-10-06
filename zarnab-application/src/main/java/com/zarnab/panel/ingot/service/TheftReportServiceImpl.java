@@ -11,7 +11,6 @@ import com.zarnab.panel.ingot.model.TheftReportStatus;
 import com.zarnab.panel.ingot.repository.IngotRepository;
 import com.zarnab.panel.ingot.repository.TheftReportRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +28,11 @@ public class TheftReportServiceImpl implements TheftReportService {
         Ingot ingot = ingotRepository.findById(request.ingotId())
                 .orElseThrow(() -> new ZarnabException(ExceptionType.INGOT_NOT_FOUND));
 
-        if (!ingot.getOwner().equals(user)) {
+        if (ingot.getOwner() == null) {
+            throw new ZarnabException(ExceptionType.INVALID_THEFT_REPORT);
+        }
+
+        if (!ingot.getOwner().getId().equals(user.getId())) {
             throw new ZarnabException(ExceptionType.INGOT_OWNERSHIP_ERROR);
         }
 

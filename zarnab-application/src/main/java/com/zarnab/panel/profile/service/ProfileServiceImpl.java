@@ -30,6 +30,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (userRepository.existsByMobileNumber(request.newMobileNumber())) {
             throw new ZarnabException(ExceptionType.USER_ALREADY_EXISTS);
         }
+
         if (user.getMobileNumber().equals(request.newMobileNumber())) {
             throw new ZarnabException(ExceptionType.TOO_MANY_REQUESTS);
         }

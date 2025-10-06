@@ -21,6 +21,7 @@ public enum ExceptionType implements IZarnabException {
     EXPIRE_OTP(HttpStatus.UNAUTHORIZED, 1001, "error.auth.expireOtp"),
     TOKEN_EXPIRED_OR_INVALID(HttpStatus.UNAUTHORIZED, 1002, "error.auth.token.invalid"),
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, 1003, "error.user.alreadyExists"),
+    NATIONAL_ID_ALREADY_EXISTS(HttpStatus.CONFLICT, 1003, "error.user.nationalIdAlreadyExists"),
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, 2002, "error.auth.otp.cooldown"),
     NEW_MOBILE_NUMBER_EQUAL_OLD(HttpStatus.BAD_REQUEST, 2002, "error.user.newMobileEqualOld"),
     INGOT_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "error.ingot.notFound"),
@@ -34,6 +35,7 @@ public enum ExceptionType implements IZarnabException {
     TRANSFER_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 3007, "error.transfer.permissionDenied"),
     DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3008, "error.ingot.duplicateTheftReport"),
     THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "error.ingot.theftReportNotFound"),
+    INVALID_THEFT_REPORT(HttpStatus.BAD_REQUEST, 3009, "error.theft.invalidTheftReport"),
     INVALID_TRANSFER_BUYER(HttpStatus.BAD_REQUEST, 3009, "error.transfer.invalidBuyer"),
 
     // --- Spring Framework & Web Layer Errors ---
