@@ -88,9 +88,9 @@ public class DataInitializer {
 
             User user = userRepository.findByMobileNumber("09999999999").orElseThrow();
 
-            log.info("Seeding database with sample ingots...");
-            boolean alreadyInit = !ingotRepository.findBySerial("ZRN-INGOT-001").isEmpty();
+            boolean alreadyInit = ingotRepository.findBySerial("ZRN-INGOT-001").isPresent();
             if (!alreadyInit) {
+                log.info("Seeding database with sample ingots...");
                 for (int i = 1; i <= 5; i++) {
                     ingotRepository.save(Ingot.builder()
                             .serial("ZRN-INGOT-00" + i)

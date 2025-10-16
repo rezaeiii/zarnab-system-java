@@ -16,7 +16,6 @@ public class AuthenticationManagerConfig {
 
     @Bean
     public AuthenticationManager authenticationManager() {
-        // The ProviderManager is the default implementation of AuthenticationManager
         return new ProviderManager(Collections.singletonList(otpAuthenticationProvider));
     }
 }

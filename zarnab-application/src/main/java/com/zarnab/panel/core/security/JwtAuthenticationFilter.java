@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             user, // Using our domain User object as the principal
                             null,
                             user.getRoles().stream()
-                                    .map(role -> new SimpleGrantedAuthority(role.name()))
+                                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                                     .collect(Collectors.toSet())
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
