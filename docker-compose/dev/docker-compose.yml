@@ -69,11 +69,11 @@ services:
       minio:
         condition: service_healthy
 
-  frontend:
-    build: ../../../frontend
-    container_name: zarnab_frontend
-    networks:
-      - zarnab-network
+#  frontend:
+#    build: ../../../frontend
+#    container_name: zarnab_frontend
+#    networks:
+#      - zarnab-network
   nginx:
     build: ../../../frontend
     container_name: zarnab_nginx
