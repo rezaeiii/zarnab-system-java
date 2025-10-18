@@ -5,10 +5,11 @@ import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.model.UserProfileType;
 import com.zarnab.panel.auth.repository.UserRepository;
-import com.zarnab.panel.common.exception.ZarnabException;
-import com.zarnab.panel.core.exception.ExceptionType;
-import com.zarnab.panel.ingot.model.Ingot;
+import com.zarnab.panel.ingot.dto.req.BatchCreateRequest;
+import com.zarnab.panel.ingot.model.ProductType;
+import com.zarnab.panel.ingot.model.Purity;
 import com.zarnab.panel.ingot.repository.IngotRepository;
+import com.zarnab.panel.ingot.service.IngotService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -31,7 +33,7 @@ public class DataInitializer {
 
     @Bean
     @SneakyThrows
-    CommandLineRunner initDatabase() {
+    CommandLineRunner initDatabase(IngotService ingotService) {
         return args -> {
             if (userRepository.count() == 0) {
                 log.info("Seeding database with sample users for development profile...");
@@ -86,20 +88,11 @@ public class DataInitializer {
 
             }
 
-            User user = userRepository.findByMobileNumber("09999999999").orElseThrow();
-
-            boolean alreadyInit = ingotRepository.findBySerial("ZRN-INGOT-001").isPresent();
+//            User user = userRepository.findByMobileNumber("09999999999").orElseThrow();
+            boolean alreadyInit = ingotRepository.findAll(Pageable.ofSize(15)).getSize() > 14;
             if (!alreadyInit) {
                 log.info("Seeding database with sample ingots...");
-                for (int i = 1; i <= 5; i++) {
-                    ingotRepository.save(Ingot.builder()
-                            .serial("ZRN-INGOT-00" + i)
-                            .manufactureDate(LocalDate.now())
-                            .karat(24)
-                            .weightGrams(100.0 * i)
-//                            .owner(user)
-                            .build());
-                }
+                ingotService.createBatch(new BatchCreateRequest(10, 0.1, Purity.P995, ProductType.COIN_FULL, LocalDate.now()));
                 log.info("Ingot seeding complete.");
             }
 

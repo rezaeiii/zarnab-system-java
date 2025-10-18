@@ -37,4 +37,12 @@ public class Ingot extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY, optional = true)
 	@JoinColumn(name = "owner_id")
 	private User owner;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private IngotState state;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "batch_id")
+	private IngotBatch batch;
 } 

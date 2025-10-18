@@ -32,8 +32,7 @@ public class SecurityConfig {
             "/api/auth/register",
             "/api/auth/refresh",
             "/api/otp/**",
-            "api/ingots/inquiry/**",
-            "api/users/**", // TODO remove
+            "/api/ingots/inquiry/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
