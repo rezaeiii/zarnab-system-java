@@ -10,6 +10,7 @@ import com.zarnab.panel.ingot.dto.IngotDtos.IngotCreateRequest;
 import com.zarnab.panel.ingot.dto.IngotDtos.IngotResponse;
 import com.zarnab.panel.ingot.dto.req.BatchCreateRequest;
 import com.zarnab.panel.ingot.dto.res.BatchCreateResponse;
+import com.zarnab.panel.ingot.dto.res.BatchIngotResponse;
 import com.zarnab.panel.ingot.dto.res.IngotBatchResponse;
 import com.zarnab.panel.ingot.model.Ingot;
 import com.zarnab.panel.ingot.model.IngotBatch;
@@ -131,6 +132,17 @@ public class IngotServiceImpl implements IngotService {
         return batch.getIngots().stream()
                 .map(Ingot::getSerial)
                 .collect(Collectors.joining("\n"));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<BatchIngotResponse> getBatchIngots(Long batchId) {
+        IngotBatch batch = ingotBatchRepository.findById(batchId)
+                .orElseThrow(() -> new ZarnabException(ExceptionType.RESOURCE_NOT_FOUND, batchId));
+
+        return batch.getIngots().stream()
+                .map(BatchIngotResponse::from)
+                .toList();
     }
 
     @Override

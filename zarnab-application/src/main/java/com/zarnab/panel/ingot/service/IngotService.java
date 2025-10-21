@@ -5,7 +5,9 @@ import com.zarnab.panel.ingot.dto.IngotDtos.IngotResponse;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.ingot.dto.req.BatchCreateRequest;
 import com.zarnab.panel.ingot.dto.res.BatchCreateResponse;
+import com.zarnab.panel.ingot.dto.res.BatchIngotResponse;
 import com.zarnab.panel.ingot.dto.res.IngotBatchResponse;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +19,9 @@ public interface IngotService {
 	BatchCreateResponse createBatch(BatchCreateRequest request);
 
 	String getBatchCsv(Long batchId);
+
+	@Transactional(readOnly = true)
+	List<BatchIngotResponse> getBatchIngots(Long batchId);
 
 	IngotResponse assignIngot(String serial);
 

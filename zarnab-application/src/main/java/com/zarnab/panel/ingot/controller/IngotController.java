@@ -5,6 +5,7 @@ import com.zarnab.panel.ingot.dto.IngotDtos.IngotCreateRequest;
 import com.zarnab.panel.ingot.dto.IngotDtos.IngotResponse;
 import com.zarnab.panel.ingot.dto.req.BatchCreateRequest;
 import com.zarnab.panel.ingot.dto.res.BatchCreateResponse;
+import com.zarnab.panel.ingot.dto.res.BatchIngotResponse;
 import com.zarnab.panel.ingot.dto.res.IngotBatchResponse;
 import com.zarnab.panel.ingot.service.IngotService;
 import jakarta.validation.Valid;
@@ -25,37 +26,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class IngotController {
 
-	private final IngotService ingotService;
+    private final IngotService ingotService;
 
-	@GetMapping
-	public ResponseEntity<List<IngotResponse>> list(@AuthenticationPrincipal User user) {
-		return ResponseEntity.ok(ingotService.list(user));
-	}
+    @GetMapping
+    public ResponseEntity<List<IngotResponse>> list(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(ingotService.list(user));
+    }
 
-	@GetMapping("all")
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<List<IngotResponse>> listAll(@AuthenticationPrincipal User user) {
-		return ResponseEntity.ok(ingotService.list(user));
-	}
+    @GetMapping("all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<IngotResponse>> listAll(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(ingotService.list(user));
+    }
 
-	@PostMapping
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<IngotResponse> create(@RequestBody IngotCreateRequest request) {
-		return ResponseEntity.ok(ingotService.create(request));
-	}
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<IngotResponse> create(@RequestBody IngotCreateRequest request) {
+        return ResponseEntity.ok(ingotService.create(request));
+    }
 
-	@GetMapping("/inquiry/{serial}")
-	public ResponseEntity<IngotResponse> inquiry(@PathVariable String serial) {
-		return ResponseEntity.ok(ingotService.inquiry(serial));
-	}
+    @GetMapping("/inquiry/{serial}")
+    public ResponseEntity<IngotResponse> inquiry(@PathVariable String serial) {
+        return ResponseEntity.ok(ingotService.inquiry(serial));
+    }
 
-	@GetMapping("/batch")
+    @GetMapping("/batch")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<IngotBatchResponse>> listBatches() {
         return ResponseEntity.ok(ingotService.listBatches());
     }
 
-	@PostMapping("/batch")
+    @GetMapping("/batch/{batchId}/ingots")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<BatchIngotResponse>> batchIngots(@PathVariable Long batchId) {
+        return ResponseEntity.ok(ingotService.getBatchIngots(batchId));
+    }
+
+    @PostMapping("/batch")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BatchCreateResponse> createBatch(@Valid @RequestBody BatchCreateRequest request) {
         return ResponseEntity.ok(ingotService.createBatch(request));
