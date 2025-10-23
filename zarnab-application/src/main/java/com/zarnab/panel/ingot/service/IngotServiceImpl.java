@@ -2,8 +2,10 @@ package com.zarnab.panel.ingot.service;
 
 import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
-import com.zarnab.panel.auth.repository.UserRepository;
 import com.zarnab.panel.common.exception.ZarnabException;
+import com.zarnab.panel.common.search.SpecificationBuilder;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.dto.IngotDtos.IngotCreateRequest;
@@ -18,6 +20,11 @@ import com.zarnab.panel.ingot.model.IngotState;
 import com.zarnab.panel.ingot.repository.IngotBatchRepository;
 import com.zarnab.panel.ingot.repository.IngotRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,22 +40,43 @@ public class IngotServiceImpl implements IngotService {
 
     private final IngotRepository ingotRepository;
     private final IngotBatchRepository ingotBatchRepository;
-    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<IngotResponse> list(User requester) {
-        boolean isAdmin = RoleUtil.hasRole(requester, Role.ADMIN);
-        boolean isCounter = RoleUtil.hasRole(requester, Role.COUNTER);
-        List<Ingot> ingots;
-        if (isAdmin) {
-            ingots = ingotRepository.findAll();
-        } else if (isCounter) {
-            ingots = ingotRepository.findByOwnerIdOrOwnerIdIsNull(requester.getId());
-        } else {
-            ingots = ingotRepository.findByOwnerId(requester.getId());
+    public PageableResponse<IngotResponse> list(User requester, PageableRequest pageableRequest) {
+        Specification<Ingot> spec = SpecificationBuilder.build(pageableRequest.getFilters());
+
+        if (RoleUtil.hasRole(requester, Role.CUSTOMER)) {
+            Specification<Ingot> customerSpec = (root, query, cb) -> cb.equal(root.get("owner"), requester);
+            spec = (spec == null) ? customerSpec : spec.and(customerSpec);
+        } else if (RoleUtil.hasRole(requester, Role.COUNTER)) {
+            Specification<Ingot> counterSpec = (root, query, cb) -> cb.or(
+                    cb.isNull(root.get("owner")),
+                    cb.equal(root.get("owner"), requester)
+            );
+            spec = (spec == null) ? counterSpec : spec.and(counterSpec);
         }
-        return ingots.stream().map(IngotResponse::from).collect(Collectors.toList());
+
+        Sort sort;
+        if (pageableRequest.getSorts() != null && !pageableRequest.getSorts().isEmpty()) {
+            List<Sort.Order> orders = pageableRequest.getSorts().stream()
+                    .map(sortRequest -> new Sort.Order(
+                            Sort.Direction.fromString(sortRequest.getDirection().name()),
+                            sortRequest.getField()))
+                    .collect(Collectors.toList());
+            sort = Sort.by(orders);
+        } else {
+            sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+
+        Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), sort);
+        Page<Ingot> ingotPage = ingotRepository.findAll(spec, pageable);
+
+        List<IngotResponse> responses = ingotPage.getContent().stream()
+                .map(IngotResponse::from)
+                .collect(Collectors.toList());
+
+        return new PageableResponse<>(responses, ingotPage.getTotalElements(), ingotPage.getNumber(), ingotPage.getSize());
     }
 
     @Override

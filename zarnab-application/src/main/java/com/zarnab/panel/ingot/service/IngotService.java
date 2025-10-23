@@ -7,12 +7,14 @@ import com.zarnab.panel.ingot.dto.req.BatchCreateRequest;
 import com.zarnab.panel.ingot.dto.res.BatchCreateResponse;
 import com.zarnab.panel.ingot.dto.res.BatchIngotResponse;
 import com.zarnab.panel.ingot.dto.res.IngotBatchResponse;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface IngotService {
-	List<IngotResponse> list(User requester);
+	PageableResponse<IngotResponse> list(User requester, PageableRequest pageableRequest);
 	IngotResponse create(IngotCreateRequest request);
 	IngotResponse inquiry(String serial);
 
