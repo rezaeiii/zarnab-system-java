@@ -1,19 +1,22 @@
 package com.zarnab.panel.ingot.controller;
 
 import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.core.annotations.PageableParam;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
 import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
 import com.zarnab.panel.ingot.service.TransferService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Validated
 @RestController
@@ -40,8 +43,11 @@ public class TransferController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "List transfers with pagination, filtering, and sorting")
     @GetMapping
-    public ResponseEntity<List<IngotDtos.TransferDto>> getTransfers(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(transferService.getTransfers(user.getMobileNumber()));
+    public ResponseEntity<PageableResponse<IngotDtos.TransferDto>> getTransfers(
+            @AuthenticationPrincipal User user,
+            @PageableParam @ParameterObject PageableRequest pageableRequest) {
+        return ResponseEntity.ok(transferService.getTransfers(user, pageableRequest));
     }
 }

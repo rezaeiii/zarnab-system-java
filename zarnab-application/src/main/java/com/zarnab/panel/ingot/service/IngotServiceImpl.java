@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +43,7 @@ public class IngotServiceImpl implements IngotService {
     @Override
     @Transactional(readOnly = true)
     public PageableResponse<IngotResponse> list(User requester, PageableRequest pageableRequest) {
-        Specification<Ingot> spec = SpecificationBuilder.build(pageableRequest.getFilters());
+        Specification<Ingot> spec = SpecificationBuilder.buildSpecification(pageableRequest);
 
         if (RoleUtil.hasRole(requester, Role.CUSTOMER)) {
             Specification<Ingot> customerSpec = (root, query, cb) -> cb.equal(root.get("owner"), requester);
@@ -57,19 +56,7 @@ public class IngotServiceImpl implements IngotService {
             spec = (spec == null) ? counterSpec : spec.and(counterSpec);
         }
 
-        Sort sort;
-        if (pageableRequest.getSorts() != null && !pageableRequest.getSorts().isEmpty()) {
-            List<Sort.Order> orders = pageableRequest.getSorts().stream()
-                    .map(sortRequest -> new Sort.Order(
-                            Sort.Direction.fromString(sortRequest.getDirection().name()),
-                            sortRequest.getField()))
-                    .collect(Collectors.toList());
-            sort = Sort.by(orders);
-        } else {
-            sort = Sort.by(Sort.Direction.DESC, "createdAt");
-        }
-
-        Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), sort);
+        Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), pageableRequest.getSort());
         Page<Ingot> ingotPage = ingotRepository.findAll(spec, pageable);
 
         List<IngotResponse> responses = ingotPage.getContent().stream()
@@ -78,6 +65,7 @@ public class IngotServiceImpl implements IngotService {
 
         return new PageableResponse<>(responses, ingotPage.getTotalElements(), ingotPage.getNumber(), ingotPage.getSize());
     }
+
 
     @Override
     @Transactional
@@ -199,4 +187,5 @@ public class IngotServiceImpl implements IngotService {
                 ))
                 .collect(Collectors.toList());
     }
+
 }

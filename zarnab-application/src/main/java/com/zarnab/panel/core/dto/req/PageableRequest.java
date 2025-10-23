@@ -1,5 +1,6 @@
 package com.zarnab.panel.core.dto.req;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -8,8 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -28,11 +31,11 @@ public class PageableRequest {
             "For BETWEEN, use `field:BETWEEN:value1:value2`. For IN, use `field:IN:value1,value2,value3`.",
             array = @ArraySchema(schema = @Schema(type = "string")),
             examples = {
-                    @ExampleObject(name = "Filter by Serial (LIKE)", value = "serial:LIKE:DA2", description = "serial:LIKE:DA2"),
-                    @ExampleObject(name = "Filter by Karat (EQUAL)", value = "karat:EQUAL:995", description = "karat:EQUAL:995"),
-                    @ExampleObject(name = "Filter by State (IN)", value = "state:IN:GENERATED,ASSIGNED", description = "state:IN:GENERATED,ASSIGNED"),
-                    @ExampleObject(name = "Filter by Weight (GREATER THAN)", value = "weightGrams:GREATER_THAN:0.5", description = "weightGrams:GREATER_THAN:0.5"),
-                    @ExampleObject(name = "Filter by Date (BETWEEN)", value = "manufactureDate:BETWEEN:2023-01-01:2023-12-31", description = "manufactureDate:BETWEEN:2023-01-01:2023-12-31")
+                    @ExampleObject(name = "Filter by Serial (LIKE)", value = "serial:LIKE:DA2"),
+                    @ExampleObject(name = "Filter by Karat (EQUAL)", value = "karat:EQUAL:995"),
+                    @ExampleObject(name = "Filter by State (IN)", value = "state:IN:GENERATED,ASSIGNED"),
+                    @ExampleObject(name = "Filter by Weight (GREATER THAN)", value = "weightGrams:GREATER_THAN:0.5"),
+                    @ExampleObject(name = "Filter by Date (BETWEEN)", value = "manufactureDate:BETWEEN:2023-01-01:2023-12-31")
             })
     private List<FilterRequest> filters;
 
@@ -43,4 +46,19 @@ public class PageableRequest {
                     @ExampleObject(name = "Sort by serial", value = "serial:ASC")
             })
     private List<SortRequest> sorts;
+
+    @JsonIgnore
+    public Sort getSort() {
+        if (sorts != null && !sorts.isEmpty()) {
+            List<Sort.Order> orders = sorts.stream()
+                    .map(sortRequest -> new Sort.Order(
+                            Sort.Direction.fromString(sortRequest.getDirection().name()),
+                            sortRequest.getField()))
+                    .collect(Collectors.toList());
+            return Sort.by(orders);
+        } else {
+            // Default sort
+            return Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+    }
 }

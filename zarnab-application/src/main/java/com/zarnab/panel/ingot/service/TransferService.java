@@ -1,11 +1,12 @@
 package com.zarnab.panel.ingot.service;
 
+import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
 import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
-
-import java.util.List;
 
 public interface TransferService {
     InitiateTransferResponse initiateTransfer(InitiateTransferRequest request, String username);
@@ -14,5 +15,5 @@ public interface TransferService {
 
     void cancelTransfer(Long transferId, String username);
 
-    List<IngotDtos.TransferDto> getTransfers(String username);
+    PageableResponse<IngotDtos.TransferDto> getTransfers(User user, PageableRequest pageableRequest);
 }
