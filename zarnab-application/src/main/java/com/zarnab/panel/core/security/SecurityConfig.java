@@ -33,6 +33,7 @@ public class SecurityConfig {
             "/api/auth/refresh",
             "/api/otp/**",
             "/api/ingots/inquiry/**",
+            "/api/ingots/**",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
