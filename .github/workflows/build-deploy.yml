@@ -78,6 +78,8 @@ jobs:
             ls
             cd ../../
             cd docker-compose/dev
+            docker compose down -v
+            rm -R postgres_data
             docker compose build
             docker compose up -d --remove-orphans
 
