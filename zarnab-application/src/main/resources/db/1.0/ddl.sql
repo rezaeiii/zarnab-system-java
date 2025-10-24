@@ -59,14 +59,12 @@ UPDATE ingots
 SET owner_id = (SELECT id FROM users WHERE mobile_number = '09999999997')
 WHERE batch_id = (SELECT id FROM ingot_batches ORDER BY created_at DESC LIMIT 1);
 
--- Step 6: Create 300 Theft/Missing Reports for the new batch (safe to re-run)
--- This only creates reports for ingots that don't have one yet.
 WITH ingots_to_report AS (
     SELECT i.id, ROW_NUMBER() OVER (ORDER BY i.id) as rn
     FROM ingots i
     LEFT JOIN theft_report tr ON i.id = tr.ingot_id
-    WHERE i.batch_id = (SELECT id FROM ingot_batches ORDER BY created_at DESC LIMIT 1)
-    AND tr.id IS NULL
+--     WHERE i.batch_id = (SELECT id FROM ingot_batches ORDER BY created_at DESC LIMIT 1)
+--     AND tr.id IS NULL
     LIMIT 300
 )
 INSERT INTO theft_report (ingot_id, reporter_id, type, description, status, created_at, updated_at)
