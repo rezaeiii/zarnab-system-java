@@ -69,24 +69,24 @@ services:
       minio:
         condition: service_healthy
 
-  frontend:
-    build: ../../../frontend
-    container_name: zarnab_frontend
-    networks:
-      - zarnab-network
-#  nginx:
+#  frontend:
 #    build: ../../../frontend
-#    container_name: zarnab_nginx
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - /etc/letsencrypt/live/zarnab.kiwiapp.ir/fullchain.pem:/etc/letsencrypt/live/zarnab.kiwiapp.ir/fullchain.pem:ro
-#      - /etc/letsencrypt/live/zarnab.kiwiapp.ir/privkey.pem:/etc/letsencrypt/live/zarnab.kiwiapp.ir/privkey.pem:ro
+#    container_name: zarnab_frontend
 #    networks:
 #      - zarnab-network
-#    depends_on:
-#      - app
+  nginx:
+    build: ../../../frontend
+    container_name: zarnab_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt/live/zarnab.kiwiapp.ir/fullchain.pem:/etc/letsencrypt/live/zarnab.kiwiapp.ir/fullchain.pem:ro
+      - /etc/letsencrypt/live/zarnab.kiwiapp.ir/privkey.pem:/etc/letsencrypt/live/zarnab.kiwiapp.ir/privkey.pem:ro
+    networks:
+      - zarnab-network
+    depends_on:
+      - app
 
 networks:
   zarnab-network:
