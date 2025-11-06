@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
 
         // If the header is missing or doesn't start with "Bearer ", proceed to the next filter.
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ") || request.getRequestURI().contains("auth/refresh")) {
             filterChain.doFilter(request, response);
             return;
         }

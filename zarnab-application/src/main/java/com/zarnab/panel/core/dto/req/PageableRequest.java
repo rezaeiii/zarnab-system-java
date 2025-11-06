@@ -11,7 +11,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Sort;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Data
@@ -26,9 +28,11 @@ public class PageableRequest {
     @Parameter(description = "Number of items per page", example = "10")
     private int size = 10;
 
+    private final Map<String, String> aliases = new HashMap<>();
+
     @Parameter(description = "Filtering criteria. Format: `field:operator:value`. " +
-            "Supported operators: EQUAL, NOT_EQUAL, LIKE, IN, BETWEEN, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, IS_NULL, IS_NOT_NULL. " +
-            "For BETWEEN, use `field:BETWEEN:value1:value2`. For IN, use `field:IN:value1,value2,value3`.",
+                             "Supported operators: EQUAL, NOT_EQUAL, LIKE, IN, BETWEEN, GREATER_THAN, LESS_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN_OR_EQUAL, IS_NULL, IS_NOT_NULL. " +
+                             "For BETWEEN, use `field:BETWEEN:value1:value2`. For IN, use `field:IN:value1,value2,value3`.",
             array = @ArraySchema(schema = @Schema(type = "string")),
             examples = {
                     @ExampleObject(name = "Filter by Serial (LIKE)", value = "serial:LIKE:DA2"),
@@ -47,18 +51,35 @@ public class PageableRequest {
             })
     private List<SortRequest> sorts;
 
+
+    public void addToAliases(String field, String alias) {
+        aliases.put(field, alias);
+    }
+
+
+    public List<FilterRequest> getFilters() {
+        if (aliases != null && !aliases.isEmpty()) {
+            filters.forEach(f -> {
+                if (aliases.containsKey(f.getField())) {
+                    f.setField(aliases.get(f.getField()));
+                }
+            });
+        }
+        return filters;
+    }
+
     @JsonIgnore
     public Sort getSort() {
         if (sorts != null && !sorts.isEmpty()) {
+
             List<Sort.Order> orders = sorts.stream()
                     .map(sortRequest -> new Sort.Order(
                             Sort.Direction.fromString(sortRequest.getDirection().name()),
-                            sortRequest.getField()))
+                            aliases.containsKey(sortRequest.getField()) ? aliases.get(sortRequest.getField()) : sortRequest.getField()))
                     .collect(Collectors.toList());
             return Sort.by(orders);
         } else {
-            // Default sort
-            return Sort.by(Sort.Direction.DESC, "createdAt");
+            return Sort.by(Sort.Direction.DESC, "id");
         }
     }
 }
