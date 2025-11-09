@@ -17,11 +17,18 @@ import com.zarnab.panel.auth.service.token.TokenStore;
 import com.zarnab.panel.clients.service.ShahkarInquiryClient;
 import com.zarnab.panel.common.exception.ZarnabException;
 import com.zarnab.panel.common.file.service.FileStorageService;
+import com.zarnab.panel.common.search.SpecificationBuilder;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.security.JwtService;
 import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -132,10 +139,26 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserManagementDtos.UserResponse> listUsers() {
-        return userRepository.findAll().stream()
+    public PageableResponse<UserManagementDtos.UserResponse> listUsers(PageableRequest pageableRequest) {
+        pageableRequest.addToAliases("firstName", "naturalPersonProfile.firstName");
+        pageableRequest.addToAliases("lastName", "naturalPersonProfile.lastName");
+        pageableRequest.addToAliases("nationalId", "naturalPersonProfile.nationalId");
+
+        Specification<User> spec = SpecificationBuilder.buildSpecification(pageableRequest);
+        Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), pageableRequest.getSort());
+
+        Page<User> userPage = userRepository.findAll(spec, pageable);
+
+        List<UserManagementDtos.UserResponse> userDtos = userPage.getContent().stream()
                 .map(UserManagementDtos.UserResponse::from)
                 .collect(Collectors.toList());
+
+        return new PageableResponse<>(
+                userDtos,
+                userPage.getTotalElements(),
+                userPage.getNumber(),
+                userPage.getSize()
+        );
     }
 
     @Override

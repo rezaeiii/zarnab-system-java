@@ -64,4 +64,11 @@ public abstract class BaseEntity {
     public int hashCode() {
         return id.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "BaseEntity{" +
+               "id=" + id +
+               '}';
+    }
 }

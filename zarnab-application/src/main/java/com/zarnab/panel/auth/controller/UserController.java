@@ -2,8 +2,13 @@ package com.zarnab.panel.auth.controller;
 
 import com.zarnab.panel.auth.dto.UserManagementDtos;
 import com.zarnab.panel.auth.service.AuthService;
+import com.zarnab.panel.core.annotations.PageableParam;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -20,9 +25,11 @@ public class UserController {
 
     private final AuthService authService;
 
+    @Operation(summary = "List users with pagination, filtering, and sorting")
     @GetMapping
-    public ResponseEntity<List<UserManagementDtos.UserResponse>> listUsers() {
-        return ResponseEntity.ok(authService.listUsers());
+    public ResponseEntity<PageableResponse<UserManagementDtos.UserResponse>> listUsers(
+            @PageableParam @ParameterObject PageableRequest pageableRequest) {
+        return ResponseEntity.ok(authService.listUsers(pageableRequest));
     }
 
     @PostMapping

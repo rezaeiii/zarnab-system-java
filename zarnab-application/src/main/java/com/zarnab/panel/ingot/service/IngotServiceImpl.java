@@ -8,17 +8,19 @@ import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.util.RoleUtil;
+import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.IngotDtos.IngotCreateRequest;
 import com.zarnab.panel.ingot.dto.IngotDtos.IngotResponse;
 import com.zarnab.panel.ingot.dto.req.BatchCreateRequest;
+import com.zarnab.panel.ingot.dto.req.BulkIngotStateChangeRequest;
 import com.zarnab.panel.ingot.dto.res.BatchCreateResponse;
 import com.zarnab.panel.ingot.dto.res.BatchIngotResponse;
-import com.zarnab.panel.ingot.dto.res.IngotBatchResponse;
-import com.zarnab.panel.ingot.model.Ingot;
-import com.zarnab.panel.ingot.model.IngotBatch;
-import com.zarnab.panel.ingot.model.IngotState;
+import com.zarnab.panel.ingot.model.*;
 import com.zarnab.panel.ingot.repository.IngotBatchRepository;
 import com.zarnab.panel.ingot.repository.IngotRepository;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -43,6 +45,10 @@ public class IngotServiceImpl implements IngotService {
     @Override
     @Transactional(readOnly = true)
     public PageableResponse<IngotResponse> list(User requester, PageableRequest pageableRequest) {
+
+        boolean justActives = justNeedActives(pageableRequest);
+        boolean justZarnabOwners = justZarnabOwners(pageableRequest);
+
         Specification<Ingot> spec = SpecificationBuilder.buildSpecification(pageableRequest);
 
         if (RoleUtil.hasRole(requester, Role.CUSTOMER)) {
@@ -50,11 +56,32 @@ public class IngotServiceImpl implements IngotService {
             spec = (spec == null) ? customerSpec : spec.and(customerSpec);
         } else if (RoleUtil.hasRole(requester, Role.COUNTER)) {
             Specification<Ingot> counterSpec = (root, query, cb) -> cb.or(
-                    cb.isNull(root.get("owner")),
                     cb.equal(root.get("owner"), requester)
             );
             spec = (spec == null) ? counterSpec : spec.and(counterSpec);
+        } else if (RoleUtil.hasRole(requester, Role.ADMIN)) {
+            if (justZarnabOwners) {
+                Specification<Ingot> counterSpec = (root, query, cb) -> cb.or(
+                        cb.isNull(root.get("owner"))
+                );
+                spec = (spec == null) ? counterSpec : spec.and(counterSpec);
+            }
         }
+        if (justActives) {
+            Specification<Ingot> activeSpec = (root, query, cb) -> {
+                Subquery<ReportIssue> subquery = query.subquery(ReportIssue.class);
+                Root<ReportIssue> subRoot = subquery.from(ReportIssue.class);
+                subquery.select(subRoot);
+
+                Predicate ingotPredicate = cb.equal(subRoot.get("ingot"), root);
+                Predicate statusPredicate = subRoot.get("status").in(ReportIssueStatus.APPROVED, ReportIssueStatus.PENDING);
+                subquery.where(cb.and(ingotPredicate, statusPredicate));
+
+                return cb.not(cb.exists(subquery));
+            };
+            spec = (spec == null) ? activeSpec : spec.and(activeSpec);
+        }
+
 
         Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), pageableRequest.getSort());
         Page<Ingot> ingotPage = ingotRepository.findAll(spec, pageable);
@@ -142,10 +169,8 @@ public class IngotServiceImpl implements IngotService {
     @Override
     @Transactional(readOnly = true)
     public String getBatchCsv(Long batchId) {
-        IngotBatch batch = ingotBatchRepository.findById(batchId)
-                .orElseThrow(() -> new ZarnabException(ExceptionType.RESOURCE_NOT_FOUND, batchId));
-
-        return batch.getIngots().stream()
+        List<Ingot> ingots = ingotRepository.findByBatchIdOrderByIdAsc(batchId);
+        return ingots.stream()
                 .map(Ingot::getSerial)
                 .collect(Collectors.joining("\n"));
     }
@@ -153,10 +178,7 @@ public class IngotServiceImpl implements IngotService {
     @Transactional(readOnly = true)
     @Override
     public List<BatchIngotResponse> getBatchIngots(Long batchId) {
-        IngotBatch batch = ingotBatchRepository.findById(batchId)
-                .orElseThrow(() -> new ZarnabException(ExceptionType.RESOURCE_NOT_FOUND, batchId));
-
-        return batch.getIngots().stream()
+        return ingotRepository.findByBatchIdOrderByIdAsc(batchId).stream()
                 .map(BatchIngotResponse::from)
                 .toList();
     }
@@ -177,15 +199,66 @@ public class IngotServiceImpl implements IngotService {
     }
 
     @Override
+    @Transactional
+    public IngotResponse unassignIngot(String serial) {
+        Ingot ingot = ingotRepository.findBySerial(serial)
+                .orElseThrow(() -> new ZarnabException(ExceptionType.INGOT_NOT_FOUND));
+
+        if (ingot.getState() != IngotState.ASSIGNED) {
+            return IngotResponse.from(ingot);
+        }
+
+        ingot.setState(IngotState.GENERATED);
+        Ingot saved = ingotRepository.save(ingot);
+        return IngotResponse.from(saved);
+    }
+
+    @Override
+    @Transactional
+    public void bulkStateChange(BulkIngotStateChangeRequest request) {
+        List<Ingot> ingots = ingotRepository.findAllBySerialIn(request.serials());
+        if (ingots.size() != request.serials().size()) {
+            throw new ZarnabException(ExceptionType.INGOT_NOT_FOUND);
+        }
+
+        for (Ingot ingot : ingots) {
+            ingot.setState(request.assign() ? IngotState.ASSIGNED : IngotState.GENERATED);
+        }
+
+        ingotRepository.saveAll(ingots);
+    }
+
+    @Override
     @Transactional(readOnly = true)
-    public List<IngotBatchResponse> listBatches() {
-        return ingotBatchRepository.findAll().stream()
-                .map(batch -> new IngotBatchResponse(
-                        batch.getId(),
-                        batch.getManufactureDate(),
-                        batch.getIngots() != null ? batch.getIngots().size() : 0
-                ))
+    public PageableResponse<IngotDtos.IngotBatchResponse> listBatches(PageableRequest pageableRequest) {
+        Specification<IngotBatch> spec = SpecificationBuilder.buildSpecification(pageableRequest);
+        Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), pageableRequest.getSort());
+        Page<IngotBatch> ingotBatchPage = ingotBatchRepository.findAll(spec, pageable);
+
+        List<IngotDtos.IngotBatchResponse> responses = ingotBatchPage.getContent().stream()
+                .map(IngotDtos.IngotBatchResponse::from)
                 .collect(Collectors.toList());
+
+        return new PageableResponse<>(responses, ingotBatchPage.getTotalElements(), ingotBatchPage.getNumber(), ingotBatchPage.getSize());
+    }
+
+    private boolean justNeedActives(PageableRequest pageableRequest) {
+        boolean justActives = pageableRequest.getFilters()
+                .stream()
+                .filter(f -> f.getField().equalsIgnoreCase("active"))
+                .anyMatch(f -> f.getValue().equalsIgnoreCase("true"));
+        pageableRequest.getFilters().removeIf(f -> f.getField().equalsIgnoreCase("active"));
+        return justActives;
+    }
+
+
+    private boolean justZarnabOwners(PageableRequest pageableRequest) {
+        boolean justActives = pageableRequest.getFilters()
+                .stream()
+                .filter(f -> f.getField().equalsIgnoreCase("justMyOwners"))
+                .anyMatch(f -> f.getValue().equalsIgnoreCase("true"));
+        pageableRequest.getFilters().removeIf(f -> f.getField().equalsIgnoreCase("justMyOwners"));
+        return justActives;
     }
 
 }

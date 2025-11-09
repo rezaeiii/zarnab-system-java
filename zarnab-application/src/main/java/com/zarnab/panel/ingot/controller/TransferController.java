@@ -18,6 +18,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Validated
 @RestController
 @RequestMapping("/api/transfers")
@@ -32,9 +34,9 @@ public class TransferController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<IngotDtos.TransferDto> verifyTransfer(@Valid @RequestBody VerifyTransferRequest request, @AuthenticationPrincipal User user) {
-        IngotDtos.TransferDto transferDto = transferService.verifyTransfer(request, user.getMobileNumber());
-        return ResponseEntity.ok(transferDto);
+    public ResponseEntity<Void> verifyTransfer(@Valid @RequestBody VerifyTransferRequest request, @AuthenticationPrincipal User user) {
+        transferService.verifyTransfer(request, user.getMobileNumber());
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{transferId}/cancel")

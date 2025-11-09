@@ -5,8 +5,11 @@ import com.zarnab.panel.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Formula;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "ingots")
@@ -15,6 +18,10 @@ import java.time.LocalDate;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+//@NamedEntityGraph(
+//		name = "Ingot.withReports",
+//		attributeNodes = @NamedAttributeNode("reports")
+//)
 public class Ingot extends BaseEntity {
 
 	// سریال
@@ -34,7 +41,7 @@ public class Ingot extends BaseEntity {
 	private Double weightGrams;
 
 	// مالک
-	@ManyToOne(fetch = FetchType.LAZY, optional = true)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "owner_id")
 	private User owner;
 
@@ -45,4 +52,39 @@ public class Ingot extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "batch_id")
 	private IngotBatch batch;
+
+	@Formula("""
+        (SELECT CASE WHEN COUNT(ri.id) > 0 THEN 1 ELSE 0 END
+         FROM report_issue ri
+         WHERE ri.ingot_id = id
+           AND ri.type = 'MISSING'
+           AND ri.status IN ('APPROVED', 'PENDING'))
+    """)
+	private boolean isMissing;
+
+
+	@Formula("""
+        (SELECT CASE WHEN COUNT(ri.id) > 0 THEN 1 ELSE 0 END
+         FROM report_issue ri
+         WHERE ri.ingot_id = id
+           AND ri.type = 'THEFT'
+           AND ri.status IN ('APPROVED', 'PENDING'))
+        """)
+	private boolean isTheft;
+
+
+	@Formula("""
+        (SELECT CASE WHEN COUNT(ri.id) > 0 THEN 1 ELSE 0 END
+         FROM report_issue ri
+         WHERE ri.ingot_id = id
+           AND ri.type = 'TAMPERING'
+           AND ri.status IN ('APPROVED', 'PENDING'))
+    """)
+	private boolean isTampering;
+
+//	@OneToMany(
+//			mappedBy = "ingot",
+//			fetch = FetchType.LAZY
+//	)
+//	private List<ReportIssue> reports;
 } 

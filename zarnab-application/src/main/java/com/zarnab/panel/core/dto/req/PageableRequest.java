@@ -58,7 +58,7 @@ public class PageableRequest {
 
 
     public List<FilterRequest> getFilters() {
-        if (aliases != null && !aliases.isEmpty()) {
+        if (!aliases.isEmpty()) {
             filters.forEach(f -> {
                 if (aliases.containsKey(f.getField())) {
                     f.setField(aliases.get(f.getField()));

@@ -62,12 +62,13 @@ WHERE batch_id = (SELECT id FROM ingot_batches ORDER BY created_at DESC LIMIT 1)
 WITH ingots_to_report AS (
     SELECT i.id, ROW_NUMBER() OVER (ORDER BY i.id) as rn
     FROM ingots i
-    LEFT JOIN theft_report tr ON i.id = tr.ingot_id
+    LEFT JOIN report_issue tr ON i.id = tr.ingot_id
+    order by i.id desc
 --     WHERE i.batch_id = (SELECT id FROM ingot_batches ORDER BY created_at DESC LIMIT 1)
 --     AND tr.id IS NULL
     LIMIT 300
 )
-INSERT INTO theft_report (ingot_id, reporter_id, type, description, status, created_at, updated_at)
+INSERT INTO report_issue (ingot_id, reporter_id, type, description, status, created_at, updated_at)
 SELECT
     itr.id,
     (SELECT id FROM users WHERE mobile_number = '09999999997'),
@@ -77,3 +78,11 @@ SELECT
     NOW(),
     NOW()
 FROM ingots_to_report itr;
+
+
+-- delete from transfer_ingots  where 1=1;
+-- delete from transfers  where 1=1;
+-- delete from report_issue where 1=1;
+-- delete from ingots where 1=1;
+
+

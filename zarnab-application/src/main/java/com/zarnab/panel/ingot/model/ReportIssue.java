@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TheftReport extends BaseEntity {
+public class ReportIssue extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "ingot_id", nullable = false)
@@ -24,12 +24,13 @@ public class TheftReport extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TheftReportType type;
+    private ReportIssueType type;
 
     @Column(nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TheftReportStatus status;
+    private ReportIssueStatus status;
+
 }

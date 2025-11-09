@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum TheftReportType {
+public enum ReportIssueType {
     THEFT("سرقت"),
     MISSING("مفقودی"),
     TAMPERING("مخدوشی");

@@ -1,16 +1,21 @@
 package com.zarnab.panel.ingot.dto;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.common.annotation.friendlyDate.FriendlyDate;
-import com.zarnab.panel.ingot.model.Ingot;
-import com.zarnab.panel.ingot.model.Transfer;
-import com.zarnab.panel.ingot.model.TransferStatus;
+import com.zarnab.panel.ingot.model.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class IngotDtos {
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public record IngotCreateRequest(
             @Schema(description = "Unique serial", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -21,8 +26,6 @@ public class IngotDtos {
             Integer karat,
             @Schema(description = "Weight in grams")
             Double weightGrams
-//            @Schema(description = "Owner userId (only admin can set)")
-//            Long ownerId
     ) {
     }
 
@@ -33,7 +36,8 @@ public class IngotDtos {
             LocalDate manufactureDate,
             Integer karat,
             Double weightGrams,
-            UserDto owner
+            UserDto owner,
+            boolean isTheft, boolean isMissing, boolean isTampering
     ) {
         public static IngotResponse from(Ingot ingot) {
             User owner = ingot.getOwner();
@@ -52,7 +56,28 @@ public class IngotDtos {
                     ingot.getManufactureDate(),
                     ingot.getKarat(),
                     ingot.getWeightGrams(),
-                    new UserDto(ownerId, mobileNumber, firstName, lastName)
+                    new UserDto(ownerId, mobileNumber, firstName, lastName),
+                    ingot.isTheft(),
+                    ingot.isMissing(),
+                    ingot.isTampering()
+            );
+        }
+    }
+
+    public record IngotBatchResponse(
+            Long id,
+            LocalDate manufactureDate,
+            int ingotCount,
+            Set<String> lastFiveSerials
+    ) {
+        public static IngotBatchResponse from(IngotBatch batch) {
+            return new IngotBatchResponse(
+                    batch.getId(),
+                    batch.getManufactureDate(),
+                    batch.getIngotCount(),
+                    batch.getLastFiveSerials() != null
+                            ? Arrays.stream(batch.getLastFiveSerials().split(",")).collect(Collectors.toSet())
+                            : new HashSet<>()
             );
         }
     }
@@ -82,13 +107,21 @@ public class IngotDtos {
             return new TransferDto(
                     transfer.getId(),
                     IngotResponse.from(transfer.getIngot()),
-                    seller != null ? new UserDto(seller.getId(), seller.getMobileNumber(), seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getFirstName() : null, seller.getNaturalPersonProfile() != null ? seller.getNaturalPersonProfile().getLastName() : null) : null,
-                    buyer != null ? new UserDto(buyer.getId(), buyer.getMobileNumber(), buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getFirstName() : null, buyer.getNaturalPersonProfile() != null ? buyer.getNaturalPersonProfile().getLastName() : null) : null,
+                    seller != null ? new UserDto(seller.getId(), seller.getMobileNumber(), seller.getNaturalPersonProfile() != null
+                            ? seller.getNaturalPersonProfile().getFirstName() : null, seller.getNaturalPersonProfile() != null
+                            ? seller.getNaturalPersonProfile().getLastName() : null) : null,
+                    buyer != null ? new UserDto(buyer.getId(), buyer.getMobileNumber(), buyer.getNaturalPersonProfile() != null
+                            ? buyer.getNaturalPersonProfile().getFirstName() : null, buyer.getNaturalPersonProfile() != null
+                            ? buyer.getNaturalPersonProfile().getLastName() : null) : null,
                     transfer.getBuyerMobileNumber(),
                     transfer.getStatus(),
                     transfer.getCreatedAt(),
                     transfer.getUpdatedAt()
             );
         }
+    }
+
+    public record ReportIssue(ReportIssueStatus status, ReportIssueType type,
+                              @FriendlyDate LocalDateTime reportAt) {
     }
 }

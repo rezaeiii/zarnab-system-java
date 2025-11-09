@@ -11,7 +11,7 @@ import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
 public interface TransferService {
     InitiateTransferResponse initiateTransfer(InitiateTransferRequest request, String username);
 
-    IngotDtos.TransferDto verifyTransfer(VerifyTransferRequest request, String username);
+    void verifyTransfer(VerifyTransferRequest request, String username);
 
     void cancelTransfer(Long transferId, String username);
 

@@ -1,16 +1,19 @@
 package com.zarnab.panel.ingot.controller;
 
 import com.zarnab.panel.auth.model.User;
-import com.zarnab.panel.ingot.dto.TheftReportDtos;
-import com.zarnab.panel.ingot.model.TheftReportStatus;
-import com.zarnab.panel.ingot.service.TheftReportService;
+import com.zarnab.panel.core.annotations.PageableParam;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
+import com.zarnab.panel.ingot.dto.ReportIssueDtos;
+import com.zarnab.panel.ingot.model.ReportIssueStatus;
+import com.zarnab.panel.ingot.service.ReportIssueService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Validated
 @RestController
@@ -18,21 +21,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportIssueController {
 
-    private final TheftReportService theftReportService;
+    private final ReportIssueService reportIssueService;
 
     @PostMapping
-    public ResponseEntity<TheftReportDtos.TheftReportResponse> createTheftReport(@RequestBody TheftReportDtos.TheftReportRequest request, @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(theftReportService.createTheftReport(request, user));
+    public ResponseEntity<ReportIssueDtos.TheftReportResponse> createTheftReport(@RequestBody ReportIssueDtos.TheftReportRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(reportIssueService.createTheftReport(request, user));
     }
 
+    @Operation(summary = "List report issues with pagination, filtering, and sorting")
     @GetMapping
-    public ResponseEntity<List<TheftReportDtos.TheftReportResponse>> getTheftReports(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(theftReportService.getTheftReports(user));
+    public ResponseEntity<PageableResponse<ReportIssueDtos.TheftReportResponse>> getReportIssues(
+            @AuthenticationPrincipal User user,
+            @PageableParam @ParameterObject PageableRequest pageableRequest) {
+        return ResponseEntity.ok(reportIssueService.getReportIssues(user, pageableRequest));
     }
 
     @PutMapping("/{reportId}/status/{status}")
-    public ResponseEntity<TheftReportDtos.TheftReportResponse> updateTheftReportStatus(@PathVariable Long reportId,
-                                                                                       @PathVariable TheftReportStatus status) {
-        return ResponseEntity.ok(theftReportService.updateTheftReportStatus(reportId, status));
+    public ResponseEntity<ReportIssueDtos.TheftReportResponse> updateTheftReportStatus(@PathVariable Long reportId,
+                                                                                       @PathVariable ReportIssueStatus status) {
+        return ResponseEntity.ok(reportIssueService.updateTheftReportStatus(reportId, status));
     }
 }

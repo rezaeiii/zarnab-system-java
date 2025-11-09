@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class InitiateTransferResponse {
-    private Long transferId;
+    private String batchId;
     private UserManagementDtos.UserResponse buyer;
 
 }

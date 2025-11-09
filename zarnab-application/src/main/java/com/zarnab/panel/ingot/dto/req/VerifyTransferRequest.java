@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class VerifyTransferRequest {
-    private Long transferId;
+    private String batchId;
     private String verificationCode;
 }

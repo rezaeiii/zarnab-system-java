@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum TheftReportStatus {
+public enum ReportIssueStatus {
     PENDING("در انتظار بررسی"),
     APPROVED("تایید شده"),
     REJECTED("رد شده");
