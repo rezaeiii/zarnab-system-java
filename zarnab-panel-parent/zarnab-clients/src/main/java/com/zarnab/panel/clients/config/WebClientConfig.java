@@ -1,6 +1,7 @@
 package com.zarnab.panel.clients.config;
 
 import com.zarnab.panel.clients.exception.ClientApiException;
+import com.zarnab.panel.clients.sms.MeliPayamakSmsClientImpl;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -81,6 +83,24 @@ public class WebClientConfig {
                 .build();
     }
 
+    @Bean
+    public WebClient meliPayamakWebClient(ClientsConfig properties) {
+        ClientsConfig.MeliPayamakSmsConfig meliPayamakProps = properties.meliPayamak();
+
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, meliPayamakProps.timeoutMs())
+                .responseTimeout(Duration.ofMillis(meliPayamakProps.timeoutMs()));
+
+        return WebClient.builder()
+                .baseUrl(meliPayamakProps.baseUrl())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .filter(logRequest())
+                .filter(logResponse())
+                .filter(createMeliPayamakErrorHandlingFilter())
+                .build();
+    }
+
 
     private ExchangeFilterFunction createRetryAndErrorHandlingFilter(ClientsConfig.Retry retryProps) {
         return (request, next) -> {
@@ -107,6 +127,29 @@ public class WebClientConfig {
 
             return responseMono;
         };
+    }
+
+    private ExchangeFilterFunction createMeliPayamakErrorHandlingFilter() {
+        return (request, next) -> next.exchange(request)
+                .flatMap(response -> {
+                    if (response.statusCode().isError()) {
+                        return handleApiError(response);
+                    }
+                    return response.bodyToMono(String.class)
+                            .flatMap(body -> {
+                                try {
+                                    int code = Integer.parseInt(body);
+                                    if (code <= 0 || code > 100) { // Error codes are not positive recIds
+                                        return Mono.error(new MeliPayamakSmsClientImpl.MeliPayamakException(MeliPayamakSmsClientImpl.MeliPayamakException.getErrorMessage(code)));
+                                    }
+                                } catch (NumberFormatException ex) {
+                                    // It's not a numeric code, which is unexpected for an error.
+                                    // Treat as a normal response and let the downstream handler process it.
+                                }
+                                // Re-create the response because the body has been consumed
+                                return Mono.just(response.mutate().body(body).build());
+                            });
+                });
     }
 
     private ExchangeFilterFunction logRequest() {

@@ -5,7 +5,7 @@ import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.repository.UserRepository;
 import com.zarnab.panel.auth.service.otp.OtpPurpose;
 import com.zarnab.panel.auth.service.otp.OtpService;
-import com.zarnab.panel.clients.dto.PersonInquiryResponse;
+import com.zarnab.panel.clients.dto.FlatPersonInquiryResponse;
 import com.zarnab.panel.clients.service.PersonInquiryClient;
 import com.zarnab.panel.clients.service.ShahkarInquiryClient;
 import com.zarnab.panel.common.exception.ZarnabException;
@@ -14,10 +14,12 @@ import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.profile.dto.ProfileDtos;
 import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,10 @@ public class ProfileServiceImpl implements ProfileService {
     private final FileStorageService fileStorageService;
     private final ShahkarInquiryClient shahkarInquiryClient;
     private final PersonInquiryClient personInquiryClient;
+    private final RedisTemplate<String, FlatPersonInquiryResponse> redisTemplate;
+
+    private static final String PERSON_INFO_CACHE_KEY_PREFIX = "person_info:";
+    private static final Duration PERSON_INFO_CACHE_TTL = Duration.ofHours(3);
 
     @Override
     public void initiateChangeMobile(ProfileDtos.InitiateChangeMobileRequest request, User user) {
@@ -55,6 +61,7 @@ public class ProfileServiceImpl implements ProfileService {
         userRepository.save(user);
     }
 
+
     @Override
     @Transactional
     public void updateProfile(ProfileDtos.UpdateProfileRequest request, MultipartFile image, User user) {
@@ -76,7 +83,23 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Mono<PersonInquiryResponse> getPersonInfo(String nationalId, String jalaliBirthDate) {
-        return personInquiryClient.getPersonInfo(nationalId, jalaliBirthDate);
+    public FlatPersonInquiryResponse getPersonInfo(String nationalId, String mobileNumber, String jalaliBirthDate) {
+
+        if (Boolean.FALSE.equals(shahkarInquiryClient.verifyMobileOwner(nationalId, mobileNumber).block())) {
+            throw new ZarnabException(ExceptionType.INVALID_MOBILE_NATIONAL_SHAHKAR);
+        }
+
+        String cacheKey = PERSON_INFO_CACHE_KEY_PREFIX + nationalId + ":" + jalaliBirthDate;
+        FlatPersonInquiryResponse cachedInfo = redisTemplate.opsForValue().get(cacheKey);
+
+        if (cachedInfo != null) {
+            return cachedInfo;
+        }
+
+        FlatPersonInquiryResponse personInfo = personInquiryClient.getPersonInfo(nationalId, jalaliBirthDate).block();
+        if (personInfo != null) {
+            redisTemplate.opsForValue().set(cacheKey, personInfo, PERSON_INFO_CACHE_TTL);
+        }
+        return personInfo;
     }
 }

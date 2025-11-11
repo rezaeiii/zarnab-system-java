@@ -6,7 +6,9 @@ import com.zarnab.panel.auth.dto.req.InitiateLoginRequest;
 import com.zarnab.panel.auth.dto.req.RegisterRequest;
 import com.zarnab.panel.auth.dto.req.VerifyOtpRequest;
 import com.zarnab.panel.auth.dto.res.LoginResponse;
+import com.zarnab.panel.auth.dto.res.MeResponse;
 import com.zarnab.panel.auth.dto.res.VerifyOtpResponse;
+import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.service.AuthService;
 import com.zarnab.panel.auth.service.otp.OtpPurpose;
 import com.zarnab.panel.auth.service.otp.OtpService;
@@ -17,12 +19,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.zarnab.panel.auth.dto.res.MeResponse;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import com.zarnab.panel.auth.model.User;
 
 /**
  * Web layer entry point for user authentication and registration flows.
@@ -73,15 +74,28 @@ public class AuthController {
      */
     @PostMapping(value = "/register", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<VerifyOtpResponse> register(
-            @FileConstraint(maxFiles = 1) @RequestPart(name = "nationalIdImage", required = false) MultipartFile nationalIdImage,
-            @RequestParam("nationalId") String nationalId,
-            @RequestParam("firstName") String firstName,
-            @RequestParam("lastName") String lastName,
-            @RequestParam("postalCode") String postalCode,
-            @RequestParam("address") String address,
-            @RequestParam("registrationToken") String registrationToken
+            @RequestPart("registrationToken") String registrationToken,
+            @RequestPart("firstName") String firstName,
+            @RequestPart("lastName") String lastName,
+            @RequestPart("nationalId") String nationalId,
+            @RequestPart(name = "nationalIdImage") @FileConstraint(maxFiles = 1) MultipartFile nationalIdImage,
+            @RequestPart(name = "address") String address,
+            @RequestPart(name = "postalCode") String postalCode,
+            @RequestPart(name = "birthDate") String birthDate,
+            @RequestPart(name = "deathStatus") String deathStatus,
+            @RequestPart(name = "fatherName") String fatherName,
+            @RequestPart(name = "gender") String gender,
+            @RequestPart(name = "officeCode") @Nullable String officeCode,
+            @RequestPart(name = "officeName") @Nullable String officeName,
+            @RequestPart(name = "shenasnameSeri") String shenasnameSeri,
+            @RequestPart(name = "shenasnameSerial") String shenasnameSerial,
+            @RequestPart(name = "shenasnamehNumber") @Nullable String shenasnamehNumber
     ) {
-        RegisterRequest request = new RegisterRequest(registrationToken, firstName, lastName, nationalId);
+        RegisterRequest request = new RegisterRequest(
+                registrationToken, firstName, lastName, nationalId, address, postalCode,
+                birthDate, deathStatus, fatherName, gender, officeCode, officeName,
+                shenasnameSeri, shenasnameSerial, shenasnamehNumber
+        );
         LoginResult loginResult = authService.registerUser(request, nationalIdImage);
         return buildLoginSuccessResponse(loginResult);
     }

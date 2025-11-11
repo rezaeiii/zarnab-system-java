@@ -90,23 +90,33 @@ public class AuthServiceImpl implements AuthService {
             throw new ZarnabException(ExceptionType.NATIONAL_ID_ALREADY_EXISTS);
         }
 
-        if (Boolean.FALSE.equals(shahkarClient.verifyMobileOwner(request.nationalId(), mobileNumber).block())) {
-            throw new ZarnabException(ExceptionType.INVALID_MOBILE_NATIONAL_SHAHKAR);
+        String imageUrl = null;
+        if (nationalIdImage != null && !nationalIdImage.isEmpty()) {
+            ObjectWriteResponse imageObject = fileStorageService.uploadFile(nationalIdImage);
+            imageUrl = imageObject.object();
         }
-
-        // upload image
-        ObjectWriteResponse imageObject = fileStorageService.uploadFile(nationalIdImage);
 
         User newUser = User.builder()
                 .mobileNumber(mobileNumber)
                 .enabled(true)
                 .roles(Set.of(Role.CUSTOMER))
                 .profileType(UserProfileType.NATURAL)
+                .address(request.address())
+                .postalCode(request.postalCode())
                 .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
                         .firstName(request.firstName())
                         .lastName(request.lastName())
                         .nationalId(request.nationalId())
-                        .nationalCardImageUrl(imageObject.object())
+                        .nationalCardImageUrl(imageUrl)
+                        .birthDate(request.birthDate())
+                        .deathStatus(request.deathStatus())
+                        .fatherName(request.fatherName())
+                        .gender(request.gender())
+                        .officeCode(request.officeCode())
+                        .officeName(request.officeName())
+                        .shenasnameSeri(request.shenasnameSeri())
+                        .shenasnameSerial(request.shenasnameSerial())
+                        .shenasnamehNumber(request.shenasnamehNumber())
                         .build())
                 .build();
         userRepository.save(newUser);

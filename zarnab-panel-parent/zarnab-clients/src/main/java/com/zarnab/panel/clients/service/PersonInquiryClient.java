@@ -1,10 +1,12 @@
 package com.zarnab.panel.clients.service;
 
 import com.zarnab.panel.clients.config.ClientsConfig;
+import com.zarnab.panel.clients.dto.FlatPersonInquiryResponse;
 import com.zarnab.panel.clients.dto.PersonInquiryRequest;
 import com.zarnab.panel.clients.dto.PersonInquiryResponse;
 import com.zarnab.panel.clients.dto.common.ApiInfo;
 import com.zarnab.panel.clients.dto.common.RequestContext;
+import com.zarnab.panel.clients.exception.PersonInquiryException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,7 +30,7 @@ public class PersonInquiryClient {
      * If the server supported it, we would ideally use GET.
      * The global filter will NOT retry this POST by default, which is safe.
      */
-    public Mono<PersonInquiryResponse> getPersonInfo(String nationalId, String birthDate) {
+    public Mono<FlatPersonInquiryResponse> getPersonInfo(String nationalId, String birthDate) {
         var apiInfo = new ApiInfo(properties.uid().businessId(), properties.uid().businessToken());
         var requestContext = new RequestContext(apiInfo);
         var request = new PersonInquiryRequest(requestContext, nationalId, birthDate);
@@ -37,6 +39,12 @@ public class PersonInquiryClient {
                 .uri("/inquiry/person/v2")
                 .bodyValue(request)
                 .retrieve()
-                .bodyToMono(PersonInquiryResponse.class);
+                .bodyToMono(PersonInquiryResponse.class)
+                .flatMap(response -> {
+                    if (response.getResponseContext().getStatus().getCode() != 0) {
+                        return Mono.error(new PersonInquiryException(response.getResponseContext().getStatus().getMessage()));
+                    }
+                    return Mono.just(FlatPersonInquiryResponse.from(response));
+                });
     }
 }

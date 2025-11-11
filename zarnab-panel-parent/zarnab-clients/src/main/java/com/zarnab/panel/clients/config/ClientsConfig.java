@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 public record ClientsConfig(
         Uid uid,
         Sms sms,
+        MeliPayamakSmsConfig meliPayamak,
         Retry retry) {
 
     public record Uid(
@@ -24,6 +25,14 @@ public record ClientsConfig(
             @NotBlank String baseUrl,
             @NotBlank String apiKey,
             @NotNull Long lineNumber,
+            @Positive int timeoutMs) {
+    }
+
+    public record MeliPayamakSmsConfig(
+            @NotBlank String baseUrl,
+            @NotBlank String username,
+            @NotBlank String password,
+            @NotBlank String from,
             @Positive int timeoutMs) {
     }
 

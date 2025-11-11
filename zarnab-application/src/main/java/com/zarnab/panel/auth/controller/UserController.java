@@ -2,6 +2,7 @@ package com.zarnab.panel.auth.controller;
 
 import com.zarnab.panel.auth.dto.UserManagementDtos;
 import com.zarnab.panel.auth.service.AuthService;
+import com.zarnab.panel.clients.dto.FlatPersonInquiryResponse;
 import com.zarnab.panel.clients.dto.PersonInquiryResponse;
 import com.zarnab.panel.core.annotations.PageableParam;
 import com.zarnab.panel.core.dto.req.PageableRequest;
@@ -59,7 +60,7 @@ public class UserController {
 
     @Operation(summary = "Get person info by national ID and Jalali birthdate")
     @PostMapping("/inquiry")
-    public Mono<PersonInquiryResponse> getPersonInfo(@Valid @RequestBody UserManagementDtos.PersonInquiryRequest request) {
-        return profileService.getPersonInfo(request.nationalId(), request.jalaliBirthDate());
+    public FlatPersonInquiryResponse getPersonInfo(@Valid @RequestBody UserManagementDtos.PersonInquiryRequest request) {
+        return profileService.getPersonInfo(request.nationalId(), request.mobileNumber(), request.jalaliBirthDate());
     }
 }

@@ -78,7 +78,11 @@ public class UserManagementDtos {
 
             @NotBlank
             @Pattern(regexp = "^\\d{4}/\\d{2}/\\d{2}$", message = "Invalid Jalali date format. Expected YYYY/MM/DD")
-            String jalaliBirthDate
+            String jalaliBirthDate,
+
+            @NotBlank
+            @Pattern(regexp = "^09[0-9]{9}$", message = "Invalid mobile number format")
+            String mobileNumber
     ) {
     }
 }

@@ -31,6 +31,7 @@ public class SecurityConfig {
             "/api/auth/verify-otp",
             "/api/auth/register",
             "/api/auth/refresh",
+            "/api/users/inquiry",
             "/api/otp/**",
             "/api/ingots/inquiry/**",
             "/api/ingots/**",
