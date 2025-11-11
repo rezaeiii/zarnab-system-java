@@ -2,9 +2,11 @@ package com.zarnab.panel.auth.controller;
 
 import com.zarnab.panel.auth.dto.UserManagementDtos;
 import com.zarnab.panel.auth.service.AuthService;
+import com.zarnab.panel.clients.dto.PersonInquiryResponse;
 import com.zarnab.panel.core.annotations.PageableParam;
 import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
+import com.zarnab.panel.profile.service.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -24,6 +27,7 @@ import java.util.List;
 public class UserController {
 
     private final AuthService authService;
+    private final ProfileService profileService;
 
     @Operation(summary = "List users with pagination, filtering, and sorting")
     @GetMapping
@@ -51,5 +55,11 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         authService.deleteUser(userId);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Get person info by national ID and Jalali birthdate")
+    @PostMapping("/inquiry")
+    public Mono<PersonInquiryResponse> getPersonInfo(@Valid @RequestBody UserManagementDtos.PersonInquiryRequest request) {
+        return profileService.getPersonInfo(request.nationalId(), request.jalaliBirthDate());
     }
 }

@@ -70,4 +70,15 @@ public class UserManagementDtos {
             Set<Role> roles
     ) {
     }
+
+    public record PersonInquiryRequest(
+            @NotBlank
+            @Pattern(regexp = "^[0-9]{10}$", message = "National ID must be 10 digits")
+            String nationalId,
+
+            @NotBlank
+            @Pattern(regexp = "^\\d{4}/\\d{2}/\\d{2}$", message = "Invalid Jalali date format. Expected YYYY/MM/DD")
+            String jalaliBirthDate
+    ) {
+    }
 }

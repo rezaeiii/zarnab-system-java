@@ -5,6 +5,8 @@ import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.repository.UserRepository;
 import com.zarnab.panel.auth.service.otp.OtpPurpose;
 import com.zarnab.panel.auth.service.otp.OtpService;
+import com.zarnab.panel.clients.dto.PersonInquiryResponse;
+import com.zarnab.panel.clients.service.PersonInquiryClient;
 import com.zarnab.panel.clients.service.ShahkarInquiryClient;
 import com.zarnab.panel.common.exception.ZarnabException;
 import com.zarnab.panel.common.file.service.FileStorageService;
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final OtpService otpService;
     private final FileStorageService fileStorageService;
     private final ShahkarInquiryClient shahkarInquiryClient;
+    private final PersonInquiryClient personInquiryClient;
 
     @Override
     public void initiateChangeMobile(ProfileDtos.InitiateChangeMobileRequest request, User user) {
@@ -69,5 +73,10 @@ public class ProfileServiceImpl implements ProfileService {
         user.setAddress(request.address());
         user.setPostalCode(request.postalCode());
         userRepository.save(user);
+    }
+
+    @Override
+    public Mono<PersonInquiryResponse> getPersonInfo(String nationalId, String jalaliBirthDate) {
+        return personInquiryClient.getPersonInfo(nationalId, jalaliBirthDate);
     }
 }
