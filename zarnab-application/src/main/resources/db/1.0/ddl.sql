@@ -5,12 +5,30 @@
 -- =====================================================================================
 
 -- Step 1: Create Users (safe to re-run)
--- INSERT INTO users (mobile_number, profile_type, enabled, first_name, last_name, national_id, created_at, updated_at)
--- VALUES
---     ('09999999999', 'NATURAL', true, 'ادمین', 'سیستم', '0000000000', NOW(), NOW()),
---     ('09999999998', 'NATURAL', true, 'کانتر', 'تستی', '2222222222', NOW(), NOW()),
---     ('09999999997', 'NATURAL', true, 'مشتری', 'تستی', '0000000001', NOW(), NOW())
--- ON CONFLICT (mobile_number) DO NOTHING;
+INSERT INTO users (mobile_number, profile_type, enabled, first_name, last_name, national_id, created_at, updated_at)
+VALUES
+    ('09999999999', 'NATURAL', true, 'ادمین', 'سیستم', '0000000000', NOW(), NOW()),
+    ('09999999998', 'NATURAL', true, 'کانتر', 'تستی', '2222222222', NOW(), NOW()),
+    ('09999999997', 'NATURAL', true, 'مشتری', 'تستی', '0000000001', NOW(), NOW())
+ON CONFLICT (mobile_number) DO NOTHING;
+
+-- Step 2: Assign Roles to Users (safe to re-run)
+-- This uses subqueries to be independent of the actual user IDs.
+INSERT INTO user_roles (user_id, role)
+SELECT id, 'ADMIN' FROM users WHERE mobile_number = '09999999999'
+ON CONFLICT (user_id, role) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role)
+SELECT id, 'COUNTER' FROM users WHERE mobile_number = '09999999998'
+ON CONFLICT (user_id, role) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role)
+SELECT id, 'CUSTOMER' FROM users WHERE mobile_number = '09999999997'
+ON CONFLICT (user_id, role) DO NOTHING;
+
+-- The rest of the script remains for context, but the primary task is complete.
+
+insert into user_roles (user_id, role) 
 --
 -- -- Step 2: Create a new Ingot Batch for this run
 -- INSERT INTO ingot_batches (manufacture_date, created_at, updated_at)
@@ -85,5 +103,3 @@ delete from transfers  where 1=1;
 delete from report_issue where 1=1;
 delete from ingots where 1=1;
 delete from ingot_batches where 1=1;
-
-
