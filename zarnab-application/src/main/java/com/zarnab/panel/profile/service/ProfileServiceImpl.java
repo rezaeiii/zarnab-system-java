@@ -68,6 +68,7 @@ public class ProfileServiceImpl implements ProfileService {
         NaturalPersonProfileEmbeddable profile = user.getNaturalPersonProfile();
         profile.setFirstName(request.firstName());
         profile.setLastName(request.lastName());
+        profile.setBirthDate(request.birthDate());
 
         String oldImage = profile.getNationalCardImageUrl();
         if (image != null && !image.isEmpty()) {

@@ -78,18 +78,18 @@ public class AuthController {
             @RequestPart("firstName") String firstName,
             @RequestPart("lastName") String lastName,
             @RequestPart("nationalId") String nationalId,
-            @RequestPart(name = "nationalIdImage") @FileConstraint(maxFiles = 1) MultipartFile nationalIdImage,
-            @RequestPart(name = "address") String address,
-            @RequestPart(name = "postalCode") String postalCode,
-            @RequestPart(name = "birthDate") String birthDate,
-            @RequestPart(name = "deathStatus") String deathStatus,
-            @RequestPart(name = "fatherName") String fatherName,
-            @RequestPart(name = "gender") String gender,
-            @RequestPart(name = "officeCode") @Nullable String officeCode,
-            @RequestPart(name = "officeName") @Nullable String officeName,
-            @RequestPart(name = "shenasnameSeri") String shenasnameSeri,
-            @RequestPart(name = "shenasnameSerial") String shenasnameSerial,
-            @RequestPart(name = "shenasnamehNumber") @Nullable String shenasnamehNumber
+            @RequestPart(name = "nationalIdImage", required = false) @FileConstraint(maxFiles = 1) MultipartFile nationalIdImage,
+            @RequestPart(name = "address", required = false) @Nullable String address,
+            @RequestPart(name = "postalCode", required = false) @Nullable String postalCode,
+            @RequestPart(name = "birthDate", required = false) @Nullable String birthDate,
+            @RequestPart(name = "deathStatus", required = false) @Nullable String deathStatus,
+            @RequestPart(name = "fatherName", required = false) @Nullable String fatherName,
+            @RequestPart(name = "gender", required = false) @Nullable String gender,
+            @RequestPart(name = "officeCode", required = false) @Nullable String officeCode,
+            @RequestPart(name = "officeName", required = false) @Nullable String officeName,
+            @RequestPart(name = "shenasnameSeri", required = false) @Nullable String shenasnameSeri,
+            @RequestPart(name = "shenasnameSerial", required = false) @Nullable String shenasnameSerial,
+            @RequestPart(name = "shenasnamehNumber", required = false) @Nullable String shenasnamehNumber
     ) {
         RegisterRequest request = new RegisterRequest(
                 registrationToken, firstName, lastName, nationalId, address, postalCode,
@@ -105,7 +105,8 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ResponseEntity<MeResponse> me(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(MeResponse.from(user));
+        User fullUser = authService.loadUserProfile(user.getId());
+        return ResponseEntity.ok(MeResponse.from(fullUser));
     }
 
     /**

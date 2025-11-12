@@ -17,7 +17,8 @@ public class ProfileDtos {
             String firstName,
             String lastName,
             String postalCode,
-            String address
+            String address,
+            String birthDate
     ) {
     }
 }

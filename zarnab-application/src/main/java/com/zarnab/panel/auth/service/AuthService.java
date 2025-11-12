@@ -5,6 +5,7 @@ import com.zarnab.panel.auth.dto.UserManagementDtos;
 import com.zarnab.panel.auth.dto.VerifyOtpResult;
 import com.zarnab.panel.auth.dto.req.InitiateLoginRequest;
 import com.zarnab.panel.auth.dto.req.RegisterRequest;
+import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +31,8 @@ public interface AuthService {
     UserManagementDtos.UserResponse createUser(UserManagementDtos.CreateUserRequest request);
 
     UserManagementDtos.UserResponse loadUser(Long userId);
+
+    User loadUserProfile(Long userId);
 
     UserManagementDtos.UserResponse updateUser(Long userId, UserManagementDtos.UpdateUserRequest request);
 

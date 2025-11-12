@@ -210,6 +210,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public User loadUserProfile(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + userId));
+    }
+
+    @Override
     @Transactional
     public UserManagementDtos.UserResponse updateUser(Long userId, UserManagementDtos.UpdateUserRequest request) {
         User user = userRepository.findById(userId)
@@ -232,6 +239,8 @@ public class AuthServiceImpl implements AuthService {
         }
         userRepository.deleteById(userId);
     }
+
+
 
     private LoginResult createLoginResult(User user) {
         String accessToken = jwtService.generateAccessToken(user);

@@ -13,6 +13,7 @@ import com.zarnab.panel.ingot.dto.res.BatchCreateResponse;
 import com.zarnab.panel.ingot.dto.res.BatchIngotResponse;
 import com.zarnab.panel.ingot.service.IngotService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -69,8 +70,9 @@ public class IngotController {
 
     @GetMapping("/batch/{batchId}/csv")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> getBatchCsv(@PathVariable Long batchId) {
-        String csv = ingotService.getBatchCsv(batchId);
+    public ResponseEntity<String> getBatchCsv(@PathVariable Long batchId, HttpServletRequest request) {
+        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String csv = ingotService.getBatchCsv(batchId, baseUrl);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ingots-" + batchId + ".csv");
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);

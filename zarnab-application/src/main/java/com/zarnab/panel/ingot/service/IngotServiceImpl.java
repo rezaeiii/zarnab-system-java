@@ -82,6 +82,10 @@ public class IngotServiceImpl implements IngotService {
             spec = (spec == null) ? activeSpec : spec.and(activeSpec);
         }
 
+        Specification<Ingot> stateSpec = (root, query, cb) -> cb.or(
+                cb.equal(root.get("state"), IngotState.ASSIGNED)
+        );
+        spec = (spec == null) ? stateSpec : spec.and(stateSpec);
 
         Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), pageableRequest.getSort());
         Page<Ingot> ingotPage = ingotRepository.findAll(spec, pageable);
@@ -168,10 +172,13 @@ public class IngotServiceImpl implements IngotService {
 
     @Override
     @Transactional(readOnly = true)
-    public String getBatchCsv(Long batchId) {
+    public String getBatchCsv(Long batchId, String baseUrl) {
         List<Ingot> ingots = ingotRepository.findByBatchIdOrderByIdAsc(batchId);
+        if (ingots.isEmpty()) {
+            return "";
+        }
         return ingots.stream()
-                .map(Ingot::getSerial)
+                .map(ingot -> baseUrl + "/public-inquiry/" + ingot.getSerial())
                 .collect(Collectors.joining("\n"));
     }
 
@@ -227,6 +234,7 @@ public class IngotServiceImpl implements IngotService {
 
         ingotRepository.saveAll(ingots);
     }
+
 
     @Override
     @Transactional(readOnly = true)

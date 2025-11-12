@@ -1,9 +1,11 @@
 package com.zarnab.panel.auth.dto.res;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.zarnab.panel.auth.model.NaturalPersonProfileEmbeddable;
 import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.model.UserProfileType;
+import com.zarnab.panel.common.file.annotation.MinioUrl;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Set;
@@ -25,26 +27,29 @@ public record MeResponse(
         @Schema(description = "Profile type for the user")
         UserProfileType profileType,
 
-        @Schema(description = "First name if natural person")
+        // Natural Person Fields
         String firstName,
-
-        @Schema(description = "Last name if natural person")
         String lastName,
-
-        @Schema(description = "National ID if natural person")
         String nationalId,
-
-        @Schema(description = "National card image URL if provided")
+        @MinioUrl(onlyDownload = false)
         String nationalCardImageUrl,
-        String postalCode,
-        String address
+        String birthDate,
+        String deathStatus,
+        String fatherName,
+        String gender,
+        String officeCode,
+        String officeName,
+        String shenasnameSeri,
+        String shenasnameSerial,
+        String shenasnamehNumber,
+
+        // Common Fields
+        String address,
+        String postalCode
 
 ) {
     public static MeResponse from(User user) {
-        String firstName = user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getFirstName() : null;
-        String lastName = user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getLastName() : null;
-        String nationalId = user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getNationalId() : null;
-        String nationalCardImageUrl = user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getNationalCardImageUrl() : null;
+        NaturalPersonProfileEmbeddable profile = user.getNaturalPersonProfile();
 
         return new MeResponse(
                 user.getId(),
@@ -52,12 +57,21 @@ public record MeResponse(
                 user.isEnabled(),
                 user.getRoles(),
                 user.getProfileType(),
-                firstName,
-                lastName,
-                nationalId,
-                nationalCardImageUrl,
-                user.getPostalCode(),
-                user.getAddress()
+                profile != null ? profile.getFirstName() : null,
+                profile != null ? profile.getLastName() : null,
+                profile != null ? profile.getNationalId() : null,
+                profile != null ? profile.getNationalCardImageUrl() : null,
+                profile != null ? profile.getBirthDate() : null,
+                profile != null ? profile.getDeathStatus() : null,
+                profile != null ? profile.getFatherName() : null,
+                profile != null ? profile.getGender() : null,
+                profile != null ? profile.getOfficeCode() : null,
+                profile != null ? profile.getOfficeName() : null,
+                profile != null ? profile.getShenasnameSeri() : null,
+                profile != null ? profile.getShenasnameSerial() : null,
+                profile != null ? profile.getShenasnamehNumber() : null,
+                user.getAddress(),
+                user.getPostalCode()
         );
     }
-} 
+}

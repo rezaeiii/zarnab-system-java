@@ -23,7 +23,7 @@ public interface IngotService {
 
     BatchCreateResponse createBatch(BatchCreateRequest request);
 
-    String getBatchCsv(Long batchId);
+    String getBatchCsv(Long batchId, String baseUrl);
 
     List<BatchIngotResponse> getBatchIngots(Long batchId);
 
