@@ -28,7 +28,6 @@ ON CONFLICT (user_id, role) DO NOTHING;
 
 -- The rest of the script remains for context, but the primary task is complete.
 
-insert into user_roles (user_id, role) 
 --
 -- -- Step 2: Create a new Ingot Batch for this run
 -- INSERT INTO ingot_batches (manufacture_date, created_at, updated_at)
