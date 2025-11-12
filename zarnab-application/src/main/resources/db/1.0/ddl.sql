@@ -28,7 +28,6 @@ ON CONFLICT (user_id, role) DO NOTHING;
 
 -- The rest of the script remains for context, but the primary task is complete.
 
---
 -- -- Step 2: Create a new Ingot Batch for this run
 -- INSERT INTO ingot_batches (manufacture_date, created_at, updated_at)
 -- VALUES (CURRENT_DATE, NOW(), NOW());
@@ -96,9 +95,10 @@ ON CONFLICT (user_id, role) DO NOTHING;
 --     NOW()
 -- FROM ingots_to_report itr;
 --
--- select count(1) from ingots
-delete from transfer_ingots  where 1=1;
-delete from transfers  where 1=1;
-delete from report_issue where 1=1;
-delete from ingots where 1=1;
-delete from ingot_batches where 1=1;
+-- -- The following DELETE statements are commented out to prevent errors on initial startup
+-- -- when the tables may not exist yet. The INSERT statements above are idempotent.
+-- -- delete from transfer_ingots  where 1=1;
+-- -- delete from transfers  where 1=1;
+-- -- delete from report_issue where 1=1;
+-- -- delete from ingots where 1=1;
+-- -- delete from ingot_batches where 1=1;
