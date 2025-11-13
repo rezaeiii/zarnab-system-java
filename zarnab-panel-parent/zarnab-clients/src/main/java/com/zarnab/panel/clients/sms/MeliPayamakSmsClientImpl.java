@@ -7,6 +7,8 @@ import com.zarnab.panel.clients.sms.dto.SmsSendRequest;
 import com.zarnab.panel.clients.sms.dto.SmsSendResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -15,6 +17,8 @@ import java.util.Collections;
 
 @Slf4j
 @Service
+@Primary
+@ConditionalOnProperty(name = "api.clients.sms.provider", havingValue = "melipayamak")
 public class MeliPayamakSmsClientImpl implements SmsServiceClient {
 
     private final WebClient meliPayamakWebClient;
@@ -28,7 +32,6 @@ public class MeliPayamakSmsClientImpl implements SmsServiceClient {
 
     @Override
     public Mono<SmsSendResponse> send(SmsSendRequest request) {
-        // MeliPayamak has a different request structure, so we adapt
         return send(request.mobiles().get(0), request.messageTexts().get(0));
     }
 

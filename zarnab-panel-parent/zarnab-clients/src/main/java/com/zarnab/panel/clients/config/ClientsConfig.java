@@ -22,6 +22,7 @@ public record ClientsConfig(
     }
 
     public record Sms(
+            @NotBlank String provider, // Added provider field
             @NotBlank String baseUrl,
             @NotBlank String apiKey,
             @NotNull Long lineNumber,
