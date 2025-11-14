@@ -5,10 +5,7 @@ import com.zarnab.panel.auth.dto.UserManagementDtos;
 import com.zarnab.panel.auth.dto.VerifyOtpResult;
 import com.zarnab.panel.auth.dto.req.InitiateLoginRequest;
 import com.zarnab.panel.auth.dto.req.RegisterRequest;
-import com.zarnab.panel.auth.model.NaturalPersonProfileEmbeddable;
-import com.zarnab.panel.auth.model.Role;
-import com.zarnab.panel.auth.model.User;
-import com.zarnab.panel.auth.model.UserProfileType;
+import com.zarnab.panel.auth.model.*;
 import com.zarnab.panel.auth.repository.UserRepository;
 import com.zarnab.panel.auth.service.otp.OtpPurpose;
 import com.zarnab.panel.auth.service.otp.OtpService;
@@ -101,6 +98,7 @@ public class AuthServiceImpl implements AuthService {
                 .enabled(true)
                 .roles(Set.of(Role.CUSTOMER))
                 .profileType(UserProfileType.NATURAL)
+                .accountStatus(AccountStatus.ACTIVE)
                 .address(request.address())
                 .postalCode(request.postalCode())
                 .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
@@ -191,6 +189,7 @@ public class AuthServiceImpl implements AuthService {
                 .enabled(true)
                 .roles(request.roles())
                 .profileType(UserProfileType.NATURAL)
+                .accountStatus(AccountStatus.ACTIVE)
                 .naturalPersonProfile(NaturalPersonProfileEmbeddable.builder()
                         .firstName(request.firstName())
                         .lastName(request.lastName())

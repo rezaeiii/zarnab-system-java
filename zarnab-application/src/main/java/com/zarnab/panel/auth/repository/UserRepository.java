@@ -22,6 +22,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     long countByCreatedAtAfter(LocalDateTime createdAt);
 
+    @Query("SELECT u FROM User u WHERE u.mobileNumber = :mobileNumber OR u.naturalPersonProfile.nationalId = :nationalId")
+    Optional<User> findByNationalIdOrMobileNumber(String mobileNumber, String nationalId);
+
     @Query("""
             SELECT new com.zarnab.panel.dashboard.dto.DashboardStatsDto(
                 (SELECT count(u.id) FROM User u),

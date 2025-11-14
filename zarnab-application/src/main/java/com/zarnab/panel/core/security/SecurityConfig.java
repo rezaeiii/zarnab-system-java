@@ -32,6 +32,7 @@ public class SecurityConfig {
             "/api/auth/register",
             "/api/auth/refresh",
             "/api/users/inquiry",
+            "/api/public/inheritance/**",
             "/api/otp/**",
             "/api/ingots/inquiry/**",
             "/api/ingots/**",

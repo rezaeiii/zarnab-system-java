@@ -38,6 +38,13 @@ public enum ExceptionType implements IZarnabException {
     INVALID_THEFT_REPORT(HttpStatus.BAD_REQUEST, 3009, "error.theft.invalidIssueReport"),
     INVALID_TRANSFER_BUYER(HttpStatus.BAD_REQUEST, 3009, "error.transfer.invalidBuyer"),
 
+    // --- Inheritance Flow Errors ---
+    INHERITANCE_CASE_ALREADY_EXISTS(HttpStatus.CONFLICT, 5001, "error.inheritance.caseAlreadyExists"),
+    INHERITANCE_CASE_NOT_FOUND(HttpStatus.NOT_FOUND, 5002, "error.inheritance.caseNotFound"),
+    INVALID_CASE_STATUS(HttpStatus.CONFLICT, 5003, "error.inheritance.invalidCaseStatus"),
+    HEIR_NOT_FOUND(HttpStatus.NOT_FOUND, 5004, "error.inheritance.heirNotFound"),
+
+
     // --- Spring Framework & Web Layer Errors ---
     VALIDATION_FAILED(HttpStatus.UNPROCESSABLE_ENTITY, 4001, "error.validation.failed"),
     MALFORMED_JSON(HttpStatus.BAD_REQUEST, 4002, "error.json.malformed"),
