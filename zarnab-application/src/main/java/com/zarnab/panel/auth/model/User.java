@@ -22,6 +22,11 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private boolean enabled;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private AccountStatus accountStatus = AccountStatus.ACTIVE;
+
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
@@ -46,4 +51,3 @@ public class User extends BaseEntity {
     private LegalPersonProfileEmbeddable legalPersonProfile;
 
 }
-

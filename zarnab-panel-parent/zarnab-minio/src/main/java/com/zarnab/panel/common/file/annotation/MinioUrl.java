@@ -17,7 +17,6 @@ public @interface MinioUrl {
 
     int expire() default 0;
 
-    boolean onlyDownload() default true;
-
-    boolean videoStream() default false;
+    // new unified mode field
+    MinioUrlMode mode() default MinioUrlMode.DOWNLOAD;
 }

@@ -15,6 +15,7 @@ import java.util.Collection;
 
 @Component
 public class MinioUrlSerializer extends JsonSerializer<Object> {
+
     private final MinioConfig minioConfig;
     private final FileStorageService fileStorageService;
 
@@ -32,12 +33,12 @@ public class MinioUrlSerializer extends JsonSerializer<Object> {
     @Override
     public void serialize(Object value, JsonGenerator jsonGenerator, SerializerProvider serializers) throws IOException {
         if (value instanceof String objectName) {
-            jsonGenerator.writeString(generatePresignedUrl(objectName, jsonGenerator));
+            writeUrl(objectName, jsonGenerator);
         } else if (value instanceof Collection<?> listOfObjectNames) {
             jsonGenerator.writeStartArray();
             for (Object item : listOfObjectNames) {
                 if (item instanceof String objectName) {
-                    jsonGenerator.writeString(generatePresignedUrl(objectName, jsonGenerator));
+                    writeUrl(objectName, jsonGenerator);
                 }
             }
             jsonGenerator.writeEndArray();
@@ -46,60 +47,62 @@ public class MinioUrlSerializer extends JsonSerializer<Object> {
         }
     }
 
-    private String generatePresignedUrl(String objectName, JsonGenerator jsonGenerator) {
+    private void writeUrl(String objectName, JsonGenerator jsonGenerator) throws IOException {
         Field field = getCurrentField(jsonGenerator);
-
         if (field == null) {
-            return null;
+            jsonGenerator.writeNull();
+            return;
         }
 
         MinioUrl annotation = field.getAnnotation(MinioUrl.class);
+        if (annotation == null) {
+            jsonGenerator.writeNull();
+            return;
+        }
+
         String folderPath = annotation.folderPath();
         int expire = getExpire(annotation);
-        boolean onlyDownload = annotation.onlyDownload();
-        boolean videoStream = annotation.videoStream();
+        MinioUrlMode mode = annotation.mode();
+        String fullPath = folderPath + objectName;
 
-        if (videoStream) {
-            return fileStorageService.getPresignedVideoUrl(folderPath + objectName, expire);
+        switch (mode) {
+            case STREAM_VIDEO -> jsonGenerator.writeString(fileStorageService.getPresignedVideoUrl(fullPath, expire));
+            case VIDEO -> jsonGenerator.writeString(fileStorageService.getPresignedObjectUrl(fullPath, expire));
+            case DOWNLOAD -> jsonGenerator.writeString(fileStorageService.getDownloadOnlyUrl(fullPath, expire));
+            case PREVIEW -> jsonGenerator.writeString(fileStorageService.getPresignedObjectUrl(fullPath, expire));
+            case BOTH -> {
+                // Write as object with two URLs
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeStringField("preview", fileStorageService.getPresignedObjectUrl(fullPath, expire));
+                jsonGenerator.writeStringField("download", fileStorageService.getDownloadOnlyUrl(fullPath, expire));
+                jsonGenerator.writeEndObject();
+            }
         }
-        if (onlyDownload) {
-            return fileStorageService.getDownloadOnlyUrl(folderPath + objectName, expire);
-        }
-
-        return fileStorageService.getPresignedObjectUrl(folderPath + objectName, expire);
     }
 
     private Field getCurrentField(JsonGenerator jsonGenerator) {
-        // Get the current serialization context
         JsonWriteContext context = (JsonWriteContext) jsonGenerator.getOutputContext();
-
-        // Traverse up the context to find the parent object and field name
         while (context != null) {
-            if (context.inObject()) { // Check if we're inside an object
+            if (context.inObject()) {
                 String fieldName = context.getCurrentName();
                 Object currentValue = context.getCurrentValue();
 
                 if (fieldName != null && currentValue != null) {
                     try {
-                        // Use reflection to get the field from the current object
                         return currentValue.getClass().getDeclaredField(fieldName);
-                    } catch (NoSuchFieldException e) {
-                        // Field not found, continue searching up the context
+                    } catch (NoSuchFieldException ignored) {
                     }
                 }
             }
-            // Move up to the parent context
             context = context.getParent();
         }
-
-        // Field not found
         return null;
     }
 
     private int getExpire(MinioUrl annotation) {
-        int expire = (annotation != null) ? annotation.expire() : 0;
-        expire = expire == 0 ? minioConfig.getDefaultExpire() : expire;
-
-        return expire;
+        int expire = annotation.expire();
+        return expire == 0 ? minioConfig.getDefaultExpire() : expire;
     }
+
+
 }

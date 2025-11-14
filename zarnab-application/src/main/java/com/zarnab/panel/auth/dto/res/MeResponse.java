@@ -6,6 +6,8 @@ import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.model.UserProfileType;
 import com.zarnab.panel.common.file.annotation.MinioUrl;
+import com.zarnab.panel.common.file.annotation.MinioUrlMode;
+import com.zarnab.panel.common.file.annotation.MinioUrlSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Set;
@@ -31,7 +33,7 @@ public record MeResponse(
         String firstName,
         String lastName,
         String nationalId,
-        @MinioUrl(onlyDownload = false)
+        @MinioUrl(mode = MinioUrlMode.DOWNLOAD)
         String nationalCardImageUrl,
         String birthDate,
         String deathStatus,
