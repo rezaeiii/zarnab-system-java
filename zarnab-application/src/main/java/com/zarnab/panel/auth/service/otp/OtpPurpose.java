@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum OtpPurpose {
-    LOGIN_REGISTRATION("AUTH", "کد تایید برای ورود به حساب کاربری شما در زرناب: {0}\n\n @zarnab.kiwiapp.ir #{0}", 10, 120),
-    INGOT_TRANSFER("INGOT_TRANSFER", "کد تایید برای انتقال شمش در زرناب: {0}\n\n@zarnab.kiwiapp.ir #{0}", 10, 120),
-    CHANGE_MOBILE("CHANGE_MOBILE", "کد تایید برای تغییر شماره موبایل شما در زرناب: {0}\n\n@zarnab.kiwiapp.ir #{0}", 10, 120),
-    INHERITANCE_VERIFICATION("INHERITANCE_VERIFICATION", "کد تایید برای انحصار وراثت در زرناب: {0}\n\n@zarnab.kiwiapp.ir #{0}", 10, 120);
+    LOGIN_REGISTRATION("AUTH", "کد تایید برای ورود به حساب کاربری شما در زرناب: {0}\n\n @zarnab.kiwiapp.ir:3000 #{0}", 10, 120),
+    INGOT_TRANSFER("INGOT_TRANSFER", "کد تایید برای انتقال شمش در زرناب: {0}\n\n@zarnab.kiwiapp.ir:3000 #{0}", 10, 120),
+    CHANGE_MOBILE("CHANGE_MOBILE", "کد تایید برای تغییر شماره موبایل شما در زرناب: {0}\n\n@zarnab.kiwiapp.ir:3000 #{0}", 10, 120),
+    INHERITANCE_VERIFICATION("INHERITANCE_VERIFICATION", "کد تایید برای انحصار وراثت در زرناب: {0}\n\n@zarnab.kiwiapp.ir:3000 #{0}", 10, 120);
 
     private final String code;
     private final String messageTemplate;
