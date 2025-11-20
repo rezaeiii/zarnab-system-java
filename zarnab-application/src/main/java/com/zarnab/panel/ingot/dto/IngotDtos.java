@@ -1,8 +1,10 @@
 package com.zarnab.panel.ingot.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.common.annotation.friendlyDate.FriendlyDate;
+import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.model.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -98,12 +100,17 @@ public class IngotDtos {
             @FriendlyDate
             LocalDateTime transferAt,
             @FriendlyDate
-            LocalDateTime lastUpdateAt
+            LocalDateTime lastUpdateAt,
+            boolean buyerIsYou,
+            boolean sellerIsYou
     ) {
-        public static TransferDto from(Transfer transfer) {
+        public static TransferDto from(Transfer transfer, User user) {
             User seller = transfer.getSeller();
             User buyer = transfer.getBuyer();
-
+            boolean admin = RoleUtil.hasRole(user, Role.ADMIN);
+            var buyerIsYou = (transfer.getBuyerMobileNumber() != null && transfer.getBuyerMobileNumber().equals(user.getMobileNumber()))
+                             || (admin && buyer == null);
+            var sellerIsYou = (admin && seller == null) || (seller != null && seller.getId().equals(user.getId()));
             return new TransferDto(
                     transfer.getId(),
                     IngotResponse.from(transfer.getIngot()),
@@ -116,9 +123,12 @@ public class IngotDtos {
                     transfer.getBuyerMobileNumber(),
                     transfer.getStatus(),
                     transfer.getCreatedAt(),
-                    transfer.getUpdatedAt()
+                    transfer.getUpdatedAt(),
+                    buyerIsYou,
+                    sellerIsYou
             );
         }
+
     }
 
     public record ReportIssue(ReportIssueStatus status, ReportIssueType type,

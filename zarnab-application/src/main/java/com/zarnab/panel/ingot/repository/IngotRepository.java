@@ -33,4 +33,5 @@ public interface IngotRepository extends JpaRepository<Ingot, Long>, JpaSpecific
     List<Ingot> findAllBySerialIn(List<String> serials);
 
     List<Ingot> findByBatchIdOrderByIdAsc(Long batchId);
+
 }

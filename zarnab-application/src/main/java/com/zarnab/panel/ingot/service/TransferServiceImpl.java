@@ -14,9 +14,13 @@ import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.dto.IngotDtos;
+import com.zarnab.panel.ingot.dto.req.InitiateQuickTransferRequest;
 import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
+import com.zarnab.panel.ingot.dto.req.SetReceiverRequest;
 import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
+import com.zarnab.panel.ingot.dto.res.InitiateQuickTransferResponse;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
+import com.zarnab.panel.ingot.dto.res.VerifyTransferResponse;
 import com.zarnab.panel.ingot.model.Ingot;
 import com.zarnab.panel.ingot.model.ReportIssueStatus;
 import com.zarnab.panel.ingot.model.Transfer;
@@ -33,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -51,49 +56,204 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     @Transactional
-    public InitiateTransferResponse initiateTransfer(InitiateTransferRequest request, String username) {
-        User seller = userRepository.findByMobileNumber(username)
+    public InitiateTransferResponse initiateTransfer(InitiateTransferRequest request, User seller) {
+        List<Ingot> ingots = ingotRepository.findAllById(request.getIngotIds());
+        if (ingots.isEmpty() || ingots.size() != request.getIngotIds().size()) {
+            throw new ZarnabException(ExceptionType.INGOT_NOT_FOUND);
+        }
+        validateTransfer(seller, request.getBuyerMobileNumber(), ingots, request.getTo());
+
+        otpService.sendOtp(OtpPurpose.INGOT_TRANSFER, seller.getMobileNumber());
+
+        String batchId = UUID.randomUUID().toString();
+        for (Ingot ingot : ingots) {
+            Transfer transfer = Transfer.builder()
+                    .ingot(ingot)
+                    .seller(seller)
+                    .buyerMobileNumber(request.getBuyerMobileNumber())
+                    .status(TransferStatus.PENDING_SENDER_VERIFICATION)
+                    .batchId(batchId)
+                    .build();
+            transferRepository.save(transfer);
+        }
+
+        User buyer = userRepository.findByMobileNumber(request.getBuyerMobileNumber()).orElse(null);
+        return new InitiateTransferResponse(batchId, UserManagementDtos.UserResponse.from(buyer));
+    }
+
+    @Override
+    @Transactional
+    public InitiateQuickTransferResponse initiateQuickTransfer(InitiateQuickTransferRequest request) {
+        Ingot ingot = ingotRepository.findBySerial(request.getIngotSerialNumber())
+                .orElseThrow(() -> new ZarnabException(ExceptionType.INGOT_NOT_FOUND));
+
+        if (ingot.getOwner() == null || !ingot.getOwner().getMobileNumber().equals(request.getSenderMobileNumber())) {
+            throw new ZarnabException(ExceptionType.INGOT_OWNERSHIP_ERROR);
+        }
+        if (reportIssueRepository.existsByIngotAndStatusIn(ingot, List.of(ReportIssueStatus.PENDING, ReportIssueStatus.APPROVED))) {
+            throw new ZarnabException(ExceptionType.INGOT_IS_STOLEN);
+        }
+
+        Optional<Transfer> transferOptional = transferRepository.findBySellerAndIngotAndStatus(
+                ingot.getOwner().getId(),
+                ingot.getId(),
+                TransferStatus.PENDING_RECEIVER_VERIFICATION);
+
+        if (transferOptional.isPresent()) {
+            throw new ZarnabException(ExceptionType.DUPLICATE_TRANSFER_REQUEST);
+        }
+
+        otpService.sendOtp(OtpPurpose.INGOT_TRANSFER, request.getSenderMobileNumber());
+
+        String batchId = UUID.randomUUID().toString();
+        Transfer transfer = Transfer.builder()
+                .ingot(ingot)
+                .seller(ingot.getOwner())
+                .status(TransferStatus.PENDING_SENDER_VERIFICATION)
+                .batchId(batchId)
+//                .buyerMobileNumber()
+                .build();
+        transferRepository.save(transfer);
+
+        return new InitiateQuickTransferResponse(batchId);
+    }
+
+    @Override
+    @Transactional
+    public void verifySender(VerifyTransferRequest request) {
+        List<Transfer> transfers = transferRepository.findByBatchId(request.getBatchId());
+        if (transfers.isEmpty()) {
+            throw new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND);
+        }
+
+        Transfer transfer = transfers.getFirst();
+
+        otpService.verifyOtp(OtpPurpose.INGOT_TRANSFER, transfer.getSeller().getMobileNumber(), request.getSenderVerificationCode());
+
+        if (transfer.getStatus() != TransferStatus.PENDING_SENDER_VERIFICATION) {
+            throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
+        }
+
+
+    }
+
+    @Override
+    public void receiverAction(Long transferId, boolean isApproved, User currentUser) {
+
+        Transfer transfer = transferRepository.findById(transferId)
+                .orElseThrow(() -> new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND, transferId));
+
+        if (!transfer.getBuyerMobileNumber().equals(currentUser.getMobileNumber())) {
+            throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
+        }
+
+        transfer.setStatus(isApproved ? TransferStatus.COMPLETED : TransferStatus.CANCELED);
+        transferRepository.save(transfer);
+    }
+
+    @Override
+    @Transactional
+    public VerifyTransferResponse setReceiver(SetReceiverRequest request) {
+        List<Transfer> transfers = transferRepository.findByBatchId(request.getBatchId());
+        if (transfers.isEmpty()) {
+            throw new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND);
+        }
+
+        Transfer transfer = transfers.getFirst();
+
+        User owner = transfer.getIngot().getOwner();
+        if (owner != null && owner.getMobileNumber().equals(request.getReceiverMobileNumber())) {
+            throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
+        }
+
+        if (transfer.getStatus() != TransferStatus.PENDING_SENDER_VERIFICATION) {
+            throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
+        }
+
+        transfer.setBuyerMobileNumber(request.getReceiverMobileNumber());
+
+        Optional<User> buyerOptional = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber());
+        if (buyerOptional.isEmpty() || RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER)) {
+            transfer.setStatus(TransferStatus.PENDING_RECEIVER_VERIFICATION);
+            smsService.sendSms(request.getReceiverMobileNumber(), translate("transfer.receiver.receiveIngotNotification", transfer.getIngot().getSerial()));
+            transferRepository.save(transfer);
+            return new VerifyTransferResponse(TransferStatus.PENDING_RECEIVER_VERIFICATION);
+        } else {
+            transfer.setBuyer(buyerOptional.get());
+            transfer.setStatus(TransferStatus.COMPLETED);
+            Ingot ingot = transfer.getIngot();
+            ingot.setOwner(buyerOptional.get());
+            ingotRepository.save(ingot);
+            transferRepository.save(transfer);
+            smsService.sendSms(transfer.getBuyerMobileNumber(), translate("transfer.success", transfer.getBuyerMobileNumber()));
+            return new VerifyTransferResponse(TransferStatus.COMPLETED);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void verifyReceiver(VerifyTransferRequest request) {
+        List<Transfer> transfers = transferRepository.findByBatchId(request.getBatchId());
+        if (transfers.isEmpty()) {
+            throw new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND);
+        }
+        Transfer transfer = transfers.getFirst();
+
+        otpService.verifyOtp(OtpPurpose.INGOT_TRANSFER, transfer.getBuyerMobileNumber(), request.getReceiverVerificationCode());
+
+        if (transfer.getStatus() != TransferStatus.PENDING_RECEIVER_VERIFICATION) {
+            throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
+        }
+
+        User buyer = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber())
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
+        for (Transfer t : transfers) {
+            t.setBuyer(buyer);
+            t.setStatus(TransferStatus.COMPLETED);
+            Ingot ingot = t.getIngot();
+            ingot.setOwner(buyer);
+            ingotRepository.save(ingot);
+            transferRepository.save(t);
+        }
+
+        smsService.sendSms(transfer.getBuyerMobileNumber(), translate("transfer.success", transfer.getBuyerMobileNumber()));
+    }
+
+    private void validateTransfer(User seller, String buyerMobileNumber, List<Ingot> ingots, InitiateTransferRequest.TransferTarget to) {
         boolean sellerIsAdmin = RoleUtil.hasRole(seller, Role.ADMIN);
         boolean sellerIsCounter = RoleUtil.hasRole(seller, Role.COUNTER);
         boolean sellerIsCustomer = !sellerIsAdmin && !sellerIsCounter;
 
         User buyer = null;
-        InitiateTransferRequest.TransferTarget to = request.getTo();
 
         if (sellerIsAdmin) {
             if (to != InitiateTransferRequest.TransferTarget.COUNTER) {
-                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER, "Admin can only transfer to Counter.");
+                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
         } else if (sellerIsCustomer) {
             if (to != InitiateTransferRequest.TransferTarget.CUSTOMER && to != InitiateTransferRequest.TransferTarget.COUNTER) {
-                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER, "Customer can only transfer to Customer or Counter.");
+                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
-        } else {
+        } else { // sellerIsCounter
             if (to != InitiateTransferRequest.TransferTarget.CUSTOMER && to != InitiateTransferRequest.TransferTarget.ZARNAB) {
-                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER, "Counter can only transfer to CUSTOMER or Zarnab.");
+                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
         }
 
         if (to == InitiateTransferRequest.TransferTarget.CUSTOMER || to == InitiateTransferRequest.TransferTarget.COUNTER) {
-            if (request.getBuyerMobileNumber() == null) {
-                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER, "Buyer mobile number is required.");
+            if (buyerMobileNumber == null) {
+                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
-            buyer = userRepository.findByMobileNumber(request.getBuyerMobileNumber())
+            buyer = userRepository.findByMobileNumber(buyerMobileNumber)
                     .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
             if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && !(RoleUtil.hasRole(buyer, Role.CUSTOMER))) {
-                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER, "Buyer must be a Customer.");
+                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
             if (to == InitiateTransferRequest.TransferTarget.COUNTER && !(RoleUtil.hasRole(buyer, Role.COUNTER))) {
-                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER, "Buyer must be a Counter.");
+                throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
-        }
-
-        List<Ingot> ingots = ingotRepository.findAllById(request.getIngotIds());
-        if (ingots.size() != request.getIngotIds().size()) {
-            throw new ZarnabException(ExceptionType.INGOT_NOT_FOUND);
         }
 
         if ((sellerIsCustomer || (sellerIsCounter && to != InitiateTransferRequest.TransferTarget.ZARNAB)) && ingots.size() > 1) {
@@ -101,7 +261,9 @@ public class TransferServiceImpl implements TransferService {
         }
 
         for (Ingot ingot : ingots) {
-            if (!sellerIsAdmin && !ingot.getOwner().getId().equals(seller.getId())) {
+            // in old
+            //            if (!sellerIsAdmin && !ingot.getOwner().getId().equals(seller.getId())) {
+            if (!sellerIsAdmin && (ingot.getOwner() == null || !ingot.getOwner().getId().equals(seller.getId()))) {
                 throw new ZarnabException(ExceptionType.INGOT_OWNERSHIP_ERROR);
             }
             if (buyer != null && ingot.getOwner() != null && buyer.getId().equals(ingot.getOwner().getId())) {
@@ -112,64 +274,6 @@ public class TransferServiceImpl implements TransferService {
                 throw new ZarnabException(ExceptionType.INGOT_IS_STOLEN);
             }
         }
-
-        otpService.sendOtp(OtpPurpose.INGOT_TRANSFER, seller.getMobileNumber());
-
-        String batchId = UUID.randomUUID().toString();
-        for (Ingot ingot : ingots) {
-            Transfer transfer = Transfer.builder()
-                    .ingot(ingot)
-                    .seller(seller)
-                    .buyerMobileNumber(request.getBuyerMobileNumber())
-                    .status(TransferStatus.PENDING_SELLER_VERIFICATION)
-                    .batchId(batchId)
-                    .build();
-            transferRepository.save(transfer);
-        }
-
-        return new InitiateTransferResponse(batchId, UserManagementDtos.UserResponse.from(buyer));
-    }
-
-
-    @Override
-    @Transactional
-    public void verifyTransfer(VerifyTransferRequest request, String username) {
-        User seller = userRepository.findByMobileNumber(username)
-                .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
-        List<Transfer> transfers = transferRepository.findByBatchId(request.getBatchId());
-        if (transfers.isEmpty()) {
-            throw new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND);
-        }
-
-        otpService.verifyOtp(OtpPurpose.INGOT_TRANSFER, seller.getMobileNumber(), request.getVerificationCode());
-
-        User buyer = null;
-        if (transfers.get(0).getBuyerMobileNumber() != null && !transfers.get(0).getBuyerMobileNumber().isEmpty()) {
-            buyer = userRepository.findByMobileNumber(transfers.get(0).getBuyerMobileNumber())
-                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
-        }
-
-        for (Transfer transfer : transfers) {
-            if (transfer.getStatus() != TransferStatus.PENDING_SELLER_VERIFICATION) {
-                throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
-            }
-            if (!transfer.getSeller().getId().equals(seller.getId())) {
-                throw new ZarnabException(ExceptionType.TRANSFER_SELLER_MISMATCH);
-            }
-
-            transfer.setBuyer(buyer);
-            transfer.setStatus(TransferStatus.COMPLETED);
-
-            Ingot ingot = transfer.getIngot();
-            ingot.setOwner(buyer);
-            ingotRepository.save(ingot);
-
-            if (transfer.getBuyerMobileNumber() != null) {
-                smsService.sendSms(transfer.getBuyerMobileNumber(), translate("transfer.success", transfer.getBuyerMobileNumber()));
-            }
-            transferRepository.save(transfer);
-        }
-
     }
 
     @Override
@@ -186,7 +290,7 @@ public class TransferServiceImpl implements TransferService {
             throw new ZarnabException(ExceptionType.TRANSFER_PERMISSION_DENIED);
         }
 
-        if (transfer.getStatus() != TransferStatus.PENDING_SELLER_VERIFICATION) {
+        if (transfer.getStatus() != TransferStatus.PENDING_SENDER_VERIFICATION && transfer.getStatus() != TransferStatus.PENDING_RECEIVER_VERIFICATION) {
             throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
         }
 
@@ -206,7 +310,8 @@ public class TransferServiceImpl implements TransferService {
             Specification<Transfer> userSecuritySpec = (root, query, criteriaBuilder) ->
                     criteriaBuilder.or(
                             criteriaBuilder.equal(root.get("seller"), user),
-                            criteriaBuilder.equal(root.get("buyer"), user)
+//                            criteriaBuilder.equal(root.get("buyerMobileNumber"), user),
+                            criteriaBuilder.equal(root.get("buyerMobileNumber"), user.getMobileNumber())
                     );
             spec = (spec == null) ? userSecuritySpec : spec.and(userSecuritySpec);
         }
@@ -216,7 +321,7 @@ public class TransferServiceImpl implements TransferService {
         Page<Transfer> transferPage = transferRepository.findAll(spec, pageable);
 
         List<IngotDtos.TransferDto> transferDtos = transferPage.getContent().stream()
-                .map(IngotDtos.TransferDto::from)
+                .map(transfer -> IngotDtos.TransferDto.from(transfer, user))
                 .collect(Collectors.toList());
 
         return new PageableResponse<>(

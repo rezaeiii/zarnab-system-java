@@ -25,14 +25,14 @@ public enum ExceptionType implements IZarnabException {
     TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, 2002, "error.auth.otp.cooldown"),
     NEW_MOBILE_NUMBER_EQUAL_OLD(HttpStatus.BAD_REQUEST, 2002, "error.user.newMobileEqualOld"),
     INGOT_NOT_FOUND(HttpStatus.NOT_FOUND, 3001, "error.ingot.notFound"),
-    INGOT_ALREADY_EXISTS(HttpStatus.CONFLICT, 3002, "error.ingot.alreadyExists"),
-    INGOT_OWNERSHIP_ERROR(HttpStatus.FORBIDDEN, 3002, "error.ingot.ownership"),
+    INGOT_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, 3002, "error.ingot.alreadyExists"),
+    INGOT_OWNERSHIP_ERROR(HttpStatus.BAD_REQUEST, 3002, "error.ingot.ownership"),
     INGOT_ALREADY_OWNERSHIP(HttpStatus.CONFLICT, 3002, "error.ingot.alreadyOwnership"),
-    INGOT_IS_STOLEN(HttpStatus.FORBIDDEN, 3003, "error.ingot.isStolen"),
+    INGOT_IS_STOLEN(HttpStatus.BAD_REQUEST, 3003, "error.ingot.isStolen"),
     TRANSFER_NOT_FOUND(HttpStatus.NOT_FOUND, 3004, "error.transfer.notFound"),
-    TRANSFER_SELLER_MISMATCH(HttpStatus.FORBIDDEN, 3005, "error.transfer.sellerMismatch"),
+    TRANSFER_SELLER_MISMATCH(HttpStatus.BAD_REQUEST, 3005, "error.transfer.sellerMismatch"),
     TRANSFER_INVALID_STATUS(HttpStatus.CONFLICT, 3006, "error.transfer.invalidStatus"),
-    TRANSFER_PERMISSION_DENIED(HttpStatus.FORBIDDEN, 3007, "error.transfer.permissionDenied"),
+    TRANSFER_PERMISSION_DENIED(HttpStatus.BAD_REQUEST, 3007, "error.transfer.permissionDenied"),
     DUPLICATE_THEFT_REPORT(HttpStatus.CONFLICT, 3008, "error.ingot.duplicateIssueReport"),
     THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "error.ingot.IssueReportNotFound"),
     INVALID_THEFT_REPORT(HttpStatus.BAD_REQUEST, 3009, "error.theft.invalidIssueReport"),
@@ -58,7 +58,10 @@ public enum ExceptionType implements IZarnabException {
     // --- Generic & Fallback Errors ---
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, 9001, "error.server.internal"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, 9002, "error.user.notFound"),
-    INVALID_MOBILE_NATIONAL_SHAHKAR(HttpStatus.BAD_REQUEST, 9003, "error.user.invalidMatchNationalMobile");
+    INVALID_MOBILE_NATIONAL_SHAHKAR(HttpStatus.BAD_REQUEST, 9003, "error.user.invalidMatchNationalMobile"),
+    DUPLICATE_TRANSFER_REQUEST(HttpStatus.BAD_REQUEST, 9004, "error.transfer.duplicateRequest"),
+
+    ;
 
     private final HttpStatus status;
     private final int code;

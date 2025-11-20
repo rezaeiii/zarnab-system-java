@@ -17,9 +17,11 @@ public class MetaController {
 
     @GetMapping("/product-types")
     public List<EnumDto> getProductTypes() {
-        return Arrays.stream(ProductType.values())
-                .map(pt -> new EnumDto(pt.name(), pt.getCode(), getProductTypePersianTitle(pt)))
-                .collect(Collectors.toList());
+//        return Arrays.stream(ProductType.values())
+//                .map(pt -> new EnumDto(pt.name(), pt.getCode(), getProductTypePersianTitle(pt)))
+//                .collect(Collectors.toList());
+        return List.of(new EnumDto("GOLD", "1", "شمش"),
+                new EnumDto("COIN", "2", "سکه"));
     }
 
     @GetMapping("/purities")
@@ -43,15 +45,13 @@ public class MetaController {
             case COIN_HALF -> "نیم سکه";
             case COIN_QUARTER -> "ربع سکه";
             case COIN_GRAMMY -> "سکه گرمی";
-            default -> "";
         };
     }
 
     private String getPurityPersianTitle(Purity p) {
-        switch (p) {
-            case P995: return "عیار 995";
-            case P750: return "عیار 750";
-            default: return "";
-        }
+        return switch (p) {
+            case P995 -> "عیار 995";
+            case P750 -> "عیار 750";
+        };
     }
 }

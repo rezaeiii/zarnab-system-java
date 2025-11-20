@@ -9,14 +9,21 @@ import java.util.List;
 
 @Data
 public class InitiateTransferRequest {
-    @NotEmpty
-    private List<Long> ingotIds;
+
+    @Pattern(
+            regexp = "^$|^09\\d{9}$",
+            message = "Invalid mobile number format"
+    )
+    private String senderMobileNumber;
 
     @Pattern(
             regexp = "^$|^09\\d{9}$",
             message = "Invalid mobile number format"
     )
     private String buyerMobileNumber;
+
+    @NotEmpty
+    private List<Long> ingotIds;
 
     @NotNull
     private TransferTarget to;

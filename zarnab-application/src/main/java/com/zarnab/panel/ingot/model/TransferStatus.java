@@ -8,9 +8,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum TransferStatus {
-    PENDING_SELLER_VERIFICATION("در انتظار تایید فروشنده"),
-    COMPLETED("تکمیل شده"),
-    CANCELED("لغو شده"),
+    PENDING_SENDER_VERIFICATION("در انتظار تایید مالک"),
+    PENDING_RECEIVER_VERIFICATION("در انتظار تایید دریافت کننده"),
+    COMPLETED("انجام شده"),
+    CANCELED("لفو شده"),
     EXPIRED("منقضی شده");
 
     private final String persianDescription;
