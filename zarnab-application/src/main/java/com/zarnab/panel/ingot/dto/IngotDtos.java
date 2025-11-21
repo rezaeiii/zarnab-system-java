@@ -52,6 +52,7 @@ public class IngotDtos {
                 mobileNumber = owner.getMobileNumber();
             }
 
+            mobileNumber = mobileNumber.substring(0, 4) + "*****" + mobileNumber.substring(9, 11);
             return new IngotResponse(
                     ingot.getId(),
                     ingot.getSerial(),
