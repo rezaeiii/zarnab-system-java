@@ -11,13 +11,11 @@ import com.zarnab.panel.common.exception.ZarnabException;
 import com.zarnab.panel.common.search.SpecificationBuilder;
 import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
+import com.zarnab.panel.core.entity.BaseEntity;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.dto.IngotDtos;
-import com.zarnab.panel.ingot.dto.req.InitiateQuickTransferRequest;
-import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
-import com.zarnab.panel.ingot.dto.req.SetReceiverRequest;
-import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
+import com.zarnab.panel.ingot.dto.req.*;
 import com.zarnab.panel.ingot.dto.res.InitiateQuickTransferResponse;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
 import com.zarnab.panel.ingot.dto.res.VerifyTransferResponse;
@@ -60,6 +58,14 @@ public class TransferServiceImpl implements TransferService {
         List<Ingot> ingots = ingotRepository.findAllById(request.getIngotIds());
         if (ingots.isEmpty() || ingots.size() != request.getIngotIds().size()) {
             throw new ZarnabException(ExceptionType.INGOT_NOT_FOUND);
+        }
+        List<Transfer> transfers = transferRepository.findBySellerAndIngotAndStatusIn(seller.getId(),
+                ingots.stream().map(BaseEntity::getId).collect(Collectors.toSet()),
+                List.of(TransferStatus.PENDING_RECEIVER_VERIFICATION, TransferStatus.PENDING_SENDER_VERIFICATION)
+        );
+
+        if (!transfers.isEmpty()) {
+            throw new ZarnabException(ExceptionType.DUPLICATE_TRANSFER_REQUEST);
         }
         validateTransfer(seller, request.getBuyerMobileNumber(), ingots, request.getTo());
 
@@ -118,9 +124,9 @@ public class TransferServiceImpl implements TransferService {
         return new InitiateQuickTransferResponse(batchId);
     }
 
-    @Override
     @Transactional
-    public void verifySender(VerifyTransferRequest request) {
+    @Override
+    public void verifySenderQuickTransfer(VerifyQuickTransferRequest request) {
         List<Transfer> transfers = transferRepository.findByBatchId(request.getBatchId());
         if (transfers.isEmpty()) {
             throw new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND);
@@ -134,6 +140,48 @@ public class TransferServiceImpl implements TransferService {
             throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
         }
 
+    }
+
+    @Transactional
+    @Override
+    public VerifyTransferResponse verifySender(VerifyTransferRequest request) {
+        List<Transfer> transfers = transferRepository.findByBatchId(request.getBatchId());
+        if (transfers.isEmpty()) {
+            throw new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND);
+        }
+
+        Transfer transfer = transfers.getFirst();
+        otpService.verifyOtp(OtpPurpose.INGOT_TRANSFER, transfer.getSeller().getMobileNumber(),
+                request.getSenderVerificationCode());
+
+        if (transfer.getStatus() != TransferStatus.PENDING_SENDER_VERIFICATION) {
+            throw new ZarnabException(ExceptionType.TRANSFER_INVALID_STATUS);
+        }
+
+        Optional<User> buyerOptional = userRepository.findByMobileNumber(request.getReceiverMobileNumber());
+        boolean toCustomer = request.getTo() == InitiateTransferRequest.TransferTarget.CUSTOMER;
+        boolean toZarnab = request.getTo() == InitiateTransferRequest.TransferTarget.ZARNAB;
+        if (toCustomer || (!toZarnab && (buyerOptional.isEmpty() || RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER)))) {
+            if (request.getReceiverMobileNumber() != null)
+                smsService.sendSms(request.getReceiverMobileNumber(), translate("transfer.receiver.receiveIngotNotification", transfer.getIngot().getSerial()));
+            transfers.forEach(t -> {
+                t.setStatus(TransferStatus.PENDING_RECEIVER_VERIFICATION);
+                t.setBuyer(buyerOptional.orElse(null));
+            });
+            transferRepository.saveAll(transfers);
+            return new VerifyTransferResponse(TransferStatus.PENDING_RECEIVER_VERIFICATION);
+        } else {
+            Ingot ingot = transfer.getIngot();
+            ingot.setOwner(toZarnab ? null : buyerOptional.get());
+            ingotRepository.save(ingot);
+            transfers.forEach(t -> {
+                t.setBuyer(toZarnab ? null : buyerOptional.get());
+                t.setStatus(TransferStatus.COMPLETED);
+            });
+            transferRepository.saveAll(transfers);
+            smsService.sendSms(transfer.getBuyerMobileNumber(), translate("transfer.success", transfer.getBuyerMobileNumber()));
+            return new VerifyTransferResponse(TransferStatus.COMPLETED);
+        }
 
     }
 
@@ -146,6 +194,10 @@ public class TransferServiceImpl implements TransferService {
         if (!transfer.getBuyerMobileNumber().equals(currentUser.getMobileNumber())) {
             throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
         }
+
+        Ingot ingot = transfer.getIngot();
+        ingot.setOwner(currentUser);
+        ingotRepository.save(ingot);
 
         transfer.setStatus(isApproved ? TransferStatus.COMPLETED : TransferStatus.CANCELED);
         transferRepository.save(transfer);
@@ -190,9 +242,9 @@ public class TransferServiceImpl implements TransferService {
         }
     }
 
-    @Override
     @Transactional
-    public void verifyReceiver(VerifyTransferRequest request) {
+    @Override
+    public void verifyReceiver(VerifyQuickTransferRequest request) {
         List<Transfer> transfers = transferRepository.findByBatchId(request.getBatchId());
         if (transfers.isEmpty()) {
             throw new ZarnabException(ExceptionType.TRANSFER_NOT_FOUND);

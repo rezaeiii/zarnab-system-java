@@ -18,6 +18,7 @@ import com.zarnab.panel.ingot.dto.res.BatchIngotResponse;
 import com.zarnab.panel.ingot.model.*;
 import com.zarnab.panel.ingot.repository.IngotBatchRepository;
 import com.zarnab.panel.ingot.repository.IngotRepository;
+import com.zarnab.panel.ingot.repository.TransferRepository;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -33,6 +34,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +43,7 @@ public class IngotServiceImpl implements IngotService {
 
     private final IngotRepository ingotRepository;
     private final IngotBatchRepository ingotBatchRepository;
+    private final TransferRepository transferRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -185,9 +188,12 @@ public class IngotServiceImpl implements IngotService {
     @Transactional(readOnly = true)
     @Override
     public List<BatchIngotResponse> getBatchIngots(Long batchId) {
-        return ingotRepository.findByBatchIdOrderByIdAsc(batchId).stream()
-                .map(BatchIngotResponse::from)
-                .toList();
+        List<Ingot> ingots = ingotRepository.findByBatchIdOrderByIdAsc(batchId);
+        Set<Long> transferredIngotIds = transferRepository.findTransferredIngotIdsByBatchId(batchId);
+
+        return ingots.stream()
+                .map(ingot -> BatchIngotResponse.from(ingot, transferredIngotIds.contains(ingot.getId())))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -195,6 +201,10 @@ public class IngotServiceImpl implements IngotService {
     public IngotResponse assignIngot(String serial) {
         Ingot ingot = ingotRepository.findBySerial(serial)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.INGOT_NOT_FOUND));
+
+        if (transferRepository.existsByIngotId(ingot.getId())) {
+            throw new ZarnabException(ExceptionType.INGOT_NOT_ASSIGNABLE);
+        }
 
         if (ingot.getState() != IngotState.GENERATED) {
             return IngotResponse.from(ingot);

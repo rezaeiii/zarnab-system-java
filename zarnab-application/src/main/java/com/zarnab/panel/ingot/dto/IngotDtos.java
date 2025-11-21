@@ -68,6 +68,7 @@ public class IngotDtos {
 
     public record IngotBatchResponse(
             Long id,
+            @FriendlyDate(includeTime = false)
             LocalDate manufactureDate,
             int ingotCount,
             Set<String> lastFiveSerials

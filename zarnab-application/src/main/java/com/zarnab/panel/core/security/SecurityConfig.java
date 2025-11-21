@@ -34,7 +34,7 @@ public class SecurityConfig {
             "/api/users/inquiry",
             "/api/public/inheritance/**",
             "/api/transfers/quick-initiate",
-            "/api/transfers/verify-sender",
+            "/api/transfers/quick-verify-sender",
             "/api/transfers/verify-receiver",
             "/api/transfers/set-receiver",
             "/api/otp/**",

@@ -3,10 +3,8 @@ package com.zarnab.panel.ingot.dto.req;
 import lombok.Data;
 
 @Data
-public class VerifyTransferRequest {
+public class VerifyQuickTransferRequest {
     private String batchId;
     private String senderVerificationCode;
-    private String receiverMobileNumber;
-    private InitiateTransferRequest.TransferTarget to;
-
+    private String receiverVerificationCode;
 }

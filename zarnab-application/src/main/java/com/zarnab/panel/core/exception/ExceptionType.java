@@ -37,6 +37,7 @@ public enum ExceptionType implements IZarnabException {
     THEFT_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, 3009, "error.ingot.IssueReportNotFound"),
     INVALID_THEFT_REPORT(HttpStatus.BAD_REQUEST, 3009, "error.theft.invalidIssueReport"),
     INVALID_TRANSFER_BUYER(HttpStatus.BAD_REQUEST, 3009, "error.transfer.invalidBuyer"),
+    INGOT_NOT_ASSIGNABLE(HttpStatus.CONFLICT, 3010, "error.ingot.notUnAssignable"),
 
     // --- Inheritance Flow Errors ---
     INHERITANCE_CASE_ALREADY_EXISTS(HttpStatus.CONFLICT, 5001, "error.inheritance.caseAlreadyExists"),

@@ -5,10 +5,7 @@ import com.zarnab.panel.core.annotations.PageableParam;
 import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.ingot.dto.IngotDtos;
-import com.zarnab.panel.ingot.dto.req.InitiateQuickTransferRequest;
-import com.zarnab.panel.ingot.dto.req.InitiateTransferRequest;
-import com.zarnab.panel.ingot.dto.req.SetReceiverRequest;
-import com.zarnab.panel.ingot.dto.req.VerifyTransferRequest;
+import com.zarnab.panel.ingot.dto.req.*;
 import com.zarnab.panel.ingot.dto.res.InitiateQuickTransferResponse;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
 import com.zarnab.panel.ingot.dto.res.VerifyTransferResponse;
@@ -43,6 +40,12 @@ public class TransferController {
     @PostMapping("/verify-sender")
     public ResponseEntity<Void> verifySender(@Valid @RequestBody VerifyTransferRequest request) {
         transferService.verifySender(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/quick-verify-sender")
+    public ResponseEntity<Void> verifySenderQuickTransfer(@Valid @RequestBody VerifyQuickTransferRequest request) {
+        transferService.verifySenderQuickTransfer(request);
         return ResponseEntity.ok().build();
     }
 

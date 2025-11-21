@@ -1,6 +1,5 @@
 package com.zarnab.panel.ingot.repository;
 
-import com.zarnab.panel.ingot.model.Ingot;
 import com.zarnab.panel.ingot.model.Transfer;
 import com.zarnab.panel.ingot.model.TransferStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface TransferRepository extends JpaRepository<Transfer, Long>, JpaSpecificationExecutor<Transfer> {
 
@@ -19,6 +19,16 @@ public interface TransferRepository extends JpaRepository<Transfer, Long>, JpaSp
 
     List<Transfer> findByBatchId(String batchId);
 
-    @Query("from Transfer where seller.id = :ownerId and ingot.id = :ingotId and status = :transferStatus")
-    Optional<Transfer> findBySellerAndIngotAndStatus(@Param("ownerId") Long ownerId, @Param("ingotId") Long ingotId, TransferStatus transferStatus);
+    @Query("select t.ingot.id from Transfer t where t.ingot.batch.id = :batchId")
+    Set<Long> findTransferredIngotIdsByBatchId(@Param("batchId") Long batchId);
+
+    @Query("from Transfer where seller.id = :sellerId and ingot.id = :ingotId and status = :transferStatus")
+    Optional<Transfer> findBySellerAndIngotAndStatus(@Param("sellerId") Long sellerId, @Param("ingotId") Long ingotId, TransferStatus transferStatus);
+
+    @Query("from Transfer where seller.id = :sellerId and ingot.id in(:ingotIds)  and status in(:statuses)")
+    List<Transfer> findBySellerAndIngotAndStatusIn(@Param("sellerId") Long sellerId,
+                                                   @Param("ingotIds") Set<Long> ingotIds,
+                                                   @Param("statuses") List<TransferStatus> statues);
+
+    boolean existsByIngotId(Long id);
 }

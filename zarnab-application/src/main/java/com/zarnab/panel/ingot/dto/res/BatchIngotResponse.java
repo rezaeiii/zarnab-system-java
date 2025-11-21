@@ -6,11 +6,12 @@ import com.zarnab.panel.ingot.model.IngotState;
 public record BatchIngotResponse(
         Long ingotId,
         String serial,
-        IngotState state
-) {
+        IngotState state,
+        boolean transferred
+        ) {
 
-    public static BatchIngotResponse from(Ingot ingot) {
-        return new BatchIngotResponse(ingot.getId(), ingot.getSerial(), ingot.getState());
+    public static BatchIngotResponse from(Ingot ingot, boolean transferred) {
+        return new BatchIngotResponse(ingot.getId(), ingot.getSerial(), ingot.getState(), transferred);
     }
 
     public boolean isAssigned() {
