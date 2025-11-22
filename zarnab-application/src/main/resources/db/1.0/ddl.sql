@@ -3,38 +3,38 @@
 -- This script uses pure SQL without procedural blocks to be compatible with Spring Boot's initializer.
 -- It is designed to be safe to run multiple times.
 -- =====================================================================================
-
--- Step 1: Create Users (safe to re-run)
-INSERT INTO users (mobile_number, profile_type, account_status, enabled, first_name, last_name, national_id, created_at,
-                   updated_at)
-VALUES ('09999999999', 'NATURAL', 'ACTIVE', true, 'ادمین', 'سیستم', '0000000000', NOW(), NOW()),
-       ('09999999998', 'NATURAL', 'ACTIVE', true, 'کانتر', 'تستی', '2222222222', NOW(), NOW()),
-       ('09999999997', 'NATURAL', 'ACTIVE', true, 'مشتری', 'تستی', '0000000001', NOW(), NOW())
-ON CONFLICT (mobile_number) DO NOTHING;
-
-alter table users
-    ADD COLUMN IF NOT EXISTS account_status VARCHAR NOT NULL DEFAULT 'ACTIVE';
-
-
--- Step 2: Assign Roles to Users (safe to re-run)
--- This uses subqueries to be independent of the actual user IDs.
-INSERT INTO user_roles (user_id, role)
-SELECT id, 'ADMIN'
-FROM users
-WHERE mobile_number = '09999999999'
-ON CONFLICT (user_id, role) DO NOTHING;
-
-INSERT INTO user_roles (user_id, role)
-SELECT id, 'COUNTER'
-FROM users
-WHERE mobile_number = '09999999998'
-ON CONFLICT (user_id, role) DO NOTHING;
-
-INSERT INTO user_roles (user_id, role)
-SELECT id, 'CUSTOMER'
-FROM users
-WHERE mobile_number = '09999999997'
-ON CONFLICT (user_id, role) DO NOTHING;
+--
+-- -- Step 1: Create Users (safe to re-run)
+-- INSERT INTO users (mobile_number, profile_type, account_status, enabled, first_name, last_name, national_id, created_at,
+--                    updated_at)
+-- VALUES ('09999999999', 'NATURAL', 'ACTIVE', true, 'ادمین', 'سیستم', '0000000000', NOW(), NOW()),
+--        ('09999999998', 'NATURAL', 'ACTIVE', true, 'کانتر', 'تستی', '2222222222', NOW(), NOW()),
+--        ('09999999997', 'NATURAL', 'ACTIVE', true, 'مشتری', 'تستی', '0000000001', NOW(), NOW())
+-- ON CONFLICT (mobile_number) DO NOTHING;
+--
+-- alter table users
+--     ADD COLUMN IF NOT EXISTS account_status VARCHAR NOT NULL DEFAULT 'ACTIVE';
+--
+--
+-- -- Step 2: Assign Roles to Users (safe to re-run)
+-- -- This uses subqueries to be independent of the actual user IDs.
+-- INSERT INTO user_roles (user_id, role)
+-- SELECT id, 'ADMIN'
+-- FROM users
+-- WHERE mobile_number = '09999999999'
+-- ON CONFLICT (user_id, role) DO NOTHING;
+--
+-- INSERT INTO user_roles (user_id, role)
+-- SELECT id, 'COUNTER'
+-- FROM users
+-- WHERE mobile_number = '09999999998'
+-- ON CONFLICT (user_id, role) DO NOTHING;
+--
+-- INSERT INTO user_roles (user_id, role)
+-- SELECT id, 'CUSTOMER'
+-- FROM users
+-- WHERE mobile_number = '09999999997'
+-- ON CONFLICT (user_id, role) DO NOTHING;
 
 -- The rest of the script remains for context, but the primary task is complete.
 
@@ -116,3 +116,5 @@ ON CONFLICT (user_id, role) DO NOTHING;
 -- delete from heirs where id !=10000;
 -- delete from inheritance_cases where id !=10000;
 
+select *
+from zarnabdb.public.user_roles;

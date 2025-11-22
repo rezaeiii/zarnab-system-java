@@ -37,7 +37,7 @@ public class Ingot extends BaseEntity {
 	private Integer karat;
 
 	// گرم
-	@Column(nullable = false)
+	@Column(nullable = true)
 	private Double weightGrams;
 
 	// مالک

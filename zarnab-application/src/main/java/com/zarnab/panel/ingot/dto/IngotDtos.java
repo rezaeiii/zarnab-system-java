@@ -52,7 +52,7 @@ public class IngotDtos {
                 mobileNumber = owner.getMobileNumber();
             }
 
-            mobileNumber = mobileNumber.substring(0, 4) + "*****" + mobileNumber.substring(9, 11);
+            mobileNumber = mobileNumber.length() > 10 ? mobileNumber.substring(0, 4) + "*****" + mobileNumber.substring(9, 11) : null;
             return new IngotResponse(
                     ingot.getId(),
                     ingot.getSerial(),
@@ -77,7 +77,7 @@ public class IngotDtos {
         public static IngotBatchResponse from(IngotBatch batch) {
             return new IngotBatchResponse(
                     batch.getId(),
-                    batch.getManufactureDate(),
+                    batch.getCreatedAt().toLocalDate(),
                     batch.getIngotCount(),
                     batch.getLastFiveSerials() != null
                             ? Arrays.stream(batch.getLastFiveSerials().split(",")).collect(Collectors.toSet())

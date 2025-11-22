@@ -12,7 +12,6 @@ public record BatchCreateRequest(
         @NotNull @Min(1) @Max(500)
         Integer count,
 
-        @NotNull
         Double weight,
 
         @NotNull

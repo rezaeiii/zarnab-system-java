@@ -297,15 +297,17 @@ public class TransferServiceImpl implements TransferService {
             if (buyerMobileNumber == null) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
-            buyer = userRepository.findByMobileNumber(buyerMobileNumber)
-                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+            var buyerOptional = userRepository.findByMobileNumber(buyerMobileNumber);
+//                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
-            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && !(RoleUtil.hasRole(buyer, Role.CUSTOMER))) {
+            if (to == InitiateTransferRequest.TransferTarget.COUNTER && (buyerOptional.isEmpty() || !(RoleUtil.hasRole(buyerOptional.get(), Role.COUNTER)))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
-            if (to == InitiateTransferRequest.TransferTarget.COUNTER && !(RoleUtil.hasRole(buyer, Role.COUNTER))) {
+
+            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && buyerOptional.isPresent() && !(RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
+            buyer = buyerOptional.orElse(null);
         }
 
         if ((sellerIsCustomer || (sellerIsCounter && to != InitiateTransferRequest.TransferTarget.ZARNAB)) && ingots.size() > 1) {
