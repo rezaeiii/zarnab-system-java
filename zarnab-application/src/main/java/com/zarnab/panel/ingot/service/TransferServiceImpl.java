@@ -171,9 +171,11 @@ public class TransferServiceImpl implements TransferService {
             transferRepository.saveAll(transfers);
             return new VerifyTransferResponse(TransferStatus.PENDING_RECEIVER_VERIFICATION);
         } else {
-            Ingot ingot = transfer.getIngot();
-            ingot.setOwner(toZarnab ? null : buyerOptional.get());
-            ingotRepository.save(ingot);
+            List<Ingot> list = transfers.stream().map(Transfer::getIngot)
+                    .peek(ingot -> {
+                        ingot.setOwner(toZarnab ? null : buyerOptional.get());
+                    }).toList();
+            ingotRepository.saveAll(list);
             transfers.forEach(t -> {
                 t.setBuyer(toZarnab ? null : buyerOptional.get());
                 t.setStatus(TransferStatus.COMPLETED);
