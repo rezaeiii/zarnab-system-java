@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -220,12 +221,35 @@ public class AuthServiceImpl implements AuthService {
     public UserManagementDtos.UserResponse updateUser(Long userId, UserManagementDtos.UpdateUserRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
+        boolean mobileChanged = !Objects.equals(user.getMobileNumber(), request.mobileNumber());
+        boolean nationalIdChanged = !Objects.equals(user.getNaturalPersonProfile().getNationalId(), request.nationalId());
+        if (mobileChanged) {
+            if (userRepository.existsByMobileNumber(request.mobileNumber())) {
+                throw new ZarnabException(ExceptionType.USER_ALREADY_EXISTS);
+            }
+        }
+
+        if (nationalIdChanged) {
+            if (userRepository.existsByNationalId(request.nationalId())) {
+                throw new ZarnabException(ExceptionType.NATIONAL_ID_ALREADY_EXISTS);
+            }
+        }
+
+        if (nationalIdChanged || mobileChanged) {
+            if (Boolean.FALSE.equals(shahkarClient.verifyMobileOwner(request.nationalId(), request.mobileNumber()).block())) {
+                throw new ZarnabException(ExceptionType.INVALID_MOBILE_NATIONAL_SHAHKAR);
+            }
+        }
 
         user.setEnabled(request.enabled());
         user.setRoles(request.roles());
+        user.getNaturalPersonProfile().setNationalId(request.nationalId());
+        user.setMobileNumber(request.mobileNumber());
         user.getNaturalPersonProfile().setFirstName(request.firstName());
         user.getNaturalPersonProfile().setLastName(request.lastName());
         user.getNaturalPersonProfile().setNationalId(request.nationalId());
+        user.setPostalCode(request.postalCode());
+        user.setAddress(request.address());
 
         return UserManagementDtos.UserResponse.from(userRepository.save(user));
     }
@@ -238,7 +262,6 @@ public class AuthServiceImpl implements AuthService {
         }
         userRepository.deleteById(userId);
     }
-
 
 
     private LoginResult createLoginResult(User user) {

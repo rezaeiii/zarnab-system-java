@@ -17,7 +17,9 @@ public class UserManagementDtos {
             String lastName,
             String nationalId,
             boolean enabled,
-            Set<Role> roles
+            Set<Role> roles,
+            String address,
+            String postalCode
     ) {
         public static UserResponse from(User user) {
             if (user == null) return null;
@@ -28,7 +30,9 @@ public class UserManagementDtos {
                     user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getLastName() : null,
                     user.getNaturalPersonProfile() != null ? user.getNaturalPersonProfile().getNationalId() : null,
                     user.isEnabled(),
-                    user.getRoles()
+                    user.getRoles(),
+                    user.getAddress(),
+                    user.getPostalCode()
             );
         }
     }
@@ -63,9 +67,10 @@ public class UserManagementDtos {
             @NotBlank
             @Pattern(regexp = "^[0-9]{10}$", message = "National ID must be 10 digits")
             String nationalId,
-
+            String mobileNumber,
             boolean enabled,
-
+            String address,
+            String postalCode,
             @Size(min = 1)
             Set<Role> roles
     ) {
