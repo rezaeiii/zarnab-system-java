@@ -51,6 +51,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.6
         with:
           host: ${{ vars.SSH_HOST }}
+          port: 2182
           username: deploy
           key: ${{ secrets.SSH_KEY }}
           source: "./artifact/*.jar"
