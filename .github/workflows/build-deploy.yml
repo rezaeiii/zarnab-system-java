@@ -6,14 +6,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-latest # Build still happens on GitHub for speed
     steps:
-      # Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Setup Java
+      - uses: actions/checkout@v4
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -21,13 +16,11 @@ jobs:
           java-version: 21
           cache: maven
 
-      # Build backend
-      - name: Build backend (skip tests)
+      - name: Build backend
         run: |
           cd zarnab-panel-parent
           mvn -B package -DskipTests
 
-      # Upload artifact to workflow storage
       - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
@@ -36,54 +29,31 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted # <--- This tells it to run on YOUR server
+    # Note: If you added a label earlier, use: [self-hosted, zarnab-server]
 
     steps:
-      # Download artifact
       - name: Download backend artifact
         uses: actions/download-artifact@v4
         with:
           name: backend-jar
           path: ./artifact
 
-      # Copy artifact to Hetzner via SCP
-      - name: Copy artifact to Hetzner
-        uses: appleboy/scp-action@v0.1.6
-        with:
-          host: ${{ vars.SSH_HOST }}
-          port: 2182
-          username: deploy
-          key: ${{ secrets.SSH_KEY }}
-          source: "./artifact/*.jar"
-          target: "/var/www/zarnab/backend/zarnab-application/target/"
+      - name: Deploy backend locally
+        run: |
+          # Move the jar to the correct location
+          mkdir -p /var/www/zarnab/backend/zarnab-application/target/
+          mv ./artifact/*.jar /var/www/zarnab/backend/zarnab-application/target/app.jar
+          
+          cd /var/www/zarnab/backend
+          
+          # Update Docker config from git
+          git config --global --add safe.directory /var/www/zarnab/backend
+          git pull origin master
 
-      # Deploy backend on server
-      - name: docker compose up
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ vars.SSH_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            # Ensure git trusts the directory
-            git config --global --add safe.directory /var/www/zarnab/backend
-
-            cd /var/www/zarnab/backend
-
-            # Pull latest Docker config
-            git pull origin master
-
-            # Build and run Docker
-            mv zarnab-application/target/artifact/*.jar ./zarnab-application/target/app.jar
-            cd zarnab-application/target
-            ls
-            cd ../../
-            cd docker-compose/dev
-            # docker compose down -v
-            # rm -R postgres_data
-            docker compose down redis
-            docker compose build
-            docker compose up -d --remove-orphans
-
-            # Clean up dangling images
-            docker image prune -f
+          # Run Docker Compose
+          cd docker-compose/dev
+          docker compose down redis
+          docker compose build
+          docker compose up -d --remove-orphans
+          docker image prune -f
