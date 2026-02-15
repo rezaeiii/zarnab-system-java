@@ -71,7 +71,7 @@ public class IngotController {
     @GetMapping("/batch/{batchId}/csv")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> getBatchCsv(@PathVariable Long batchId, HttpServletRequest request) {
-        String baseUrl = "https" + "://" + request.getServerName() + ":3000";
+        String baseUrl = "https" + "://" + request.getServerName();
         String csv = ingotService.getBatchCsv(batchId, baseUrl);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=ingots-" + batchId + ".csv");

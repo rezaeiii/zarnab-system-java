@@ -135,8 +135,8 @@ public class IngotServiceImpl implements IngotService {
         LocalDate startOfMonth = yearMonth.atDay(1);
         LocalDate endOfMonth = yearMonth.atEndOfMonth();
 
-        int lastSequence = ingotRepository.findTopBymanufactureDateBetweenOrderBySerialDesc(startOfMonth, endOfMonth)
-                .map(ingot -> Integer.parseInt(ingot.getSerial().substring(8)))
+        int lastSequence = ingotRepository.findTopBymanufactureDateBetweenOrderByIdDesc(startOfMonth, endOfMonth)
+                .map(ingot -> Integer.parseInt(ingot.getSerial().substring(6)))
                 .orElse(0);
 
         IngotBatch batch = IngotBatch.builder()

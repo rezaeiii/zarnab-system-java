@@ -1,6 +1,7 @@
 package com.zarnab.panel.ingot.repository;
 
 import com.zarnab.panel.ingot.model.Ingot;
+import io.micrometer.core.instrument.config.MeterFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,10 +31,9 @@ public interface IngotRepository extends JpaRepository<Ingot, Long>, JpaSpecific
 
     List<Ingot> findByOwnerIdOrOwnerIdIsNull(Long id);
 
-    Optional<Ingot> findTopBymanufactureDateBetweenOrderBySerialDesc(LocalDate startDate, LocalDate endDate);
+    Optional<Ingot> findTopBymanufactureDateBetweenOrderByIdDesc(LocalDate startDate, LocalDate endDate);
 
     List<Ingot> findAllBySerialIn(List<String> serials);
 
     List<Ingot> findByBatchIdOrderByIdAsc(Long batchId);
-
 }
