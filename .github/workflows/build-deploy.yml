@@ -5,10 +5,12 @@ on:
     branches: ["master"]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # Build still happens on GitHub for speed
+  deploy:
+    runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -16,42 +18,22 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Build backend
+      - name: Build backend locally
         run: |
           cd zarnab-panel-parent
           mvn -B package -DskipTests
-
-      - name: Upload backend artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-jar
-          path: zarnab-application/target/*.jar
-
-  deploy:
-    needs: build
-    runs-on: self-hosted # <--- This tells it to run on YOUR server
-    # Note: If you added a label earlier, use: [self-hosted, zarnab-server]
-
-    steps:
-      - name: Download backend artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-jar
-          path: ./artifact
-
-      - name: Deploy backend locally
-        run: |
-          # Move the jar to the correct location
+          
+          # Move the jar
           mkdir -p /var/www/zarnab/backend/zarnab-application/target/
-          mv ./artifact/*.jar /var/www/zarnab/backend/zarnab-application/target/app.jar
-          
-          cd /var/www/zarnab/backend
-          
-          # Update Docker config from git
-          git config --global --add safe.directory /var/www/zarnab/backend
-          git pull origin master
+          cp ../zarnab-application/target/*.jar /var/www/zarnab/backend/zarnab-application/target/app.jar
 
-          # Run Docker Compose
+      - name: Docker Deploy
+        run: |
+          cd /var/www/zarnab/backend
+          git config --global --add safe.directory /var/www/zarnab/backend
+          # No need to pull if checkout worked, but safe to keep:
+          git pull origin master 
+
           cd docker-compose/dev
           docker compose down redis
           docker compose build
