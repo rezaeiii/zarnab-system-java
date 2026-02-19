@@ -117,4 +117,4 @@
 -- delete from inheritance_cases where id !=10000;
 
 select *
-from zarnabdb.public.user_roles;
+from users;
