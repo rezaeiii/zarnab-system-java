@@ -74,7 +74,32 @@ public enum ProductType {
      * Grammy Gold Coin
      * (سکه گرمی)
      */
-    COIN_GRAMMY("W");
+    COIN_GRAMMY("W"),
+
+    /**
+     * 100 Gram Silver Bar
+     * (شمش نقره 100 گرمی)
+     */
+    SILVER_100G("R"),
+
+    /**
+     * 50 Gram Silver Bar
+     * (شمش نقره 50 گرمی)
+     */
+    SILVER_50G("S"),
+
+    /**
+     * 20 Gram Silver Bar
+     * (شمش نقره 20 گرمی)
+     */
+    SILVER_20G("T"),
+
+    /**
+     * 1 Ounce Silver Bar
+     * (شمش نقره یک اونس)
+     */
+    SILVER_1OZ("U");
+    ;
 
     private final String code;
 
@@ -83,6 +108,8 @@ public enum ProductType {
     }
 
 }
+
+
 
 
 
