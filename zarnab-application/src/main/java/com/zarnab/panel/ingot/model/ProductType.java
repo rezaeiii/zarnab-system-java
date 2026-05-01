@@ -98,7 +98,7 @@ public enum ProductType {
      * 1 Ounce Silver Bar
      * (شمش نقره یک اونس)
      */
-    SILVER_1OZ("U");
+    SILVER_31G("U");
     ;
 
     private final String code;
