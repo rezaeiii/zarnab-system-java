@@ -14,4 +14,14 @@ public class DashboardStatsDto {
     private Double assetWeightInZarnab;
     private Long totalTransfers;
     private Long transfersLastMonth;
+
+    // Coins
+    private Long fullCoinCount;
+    private Long halfCoinCount;
+    private Long quarterCoinCount;
+    private Long grammyCoinCount;
+
+    // Bars
+    private Double totalGoldBarWeight;
+    private Double totalSilverBarWeight;
 }

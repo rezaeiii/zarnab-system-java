@@ -26,6 +26,8 @@ import com.zarnab.panel.ingot.model.TransferStatus;
 import com.zarnab.panel.ingot.repository.IngotRepository;
 import com.zarnab.panel.ingot.repository.ReportIssueRepository;
 import com.zarnab.panel.ingot.repository.TransferRepository;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -387,4 +389,49 @@ public class TransferServiceImpl implements TransferService {
                 transferPage.getSize()
         );
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public PageableResponse<IngotDtos.TransferDto> getCounterTransfers(User user, PageableRequest pageableRequest) {
+
+        if (!RoleUtil.hasRole(user, Role.ADMIN)) {
+            return null;
+        }
+        pageableRequest.addToAliases("serial", "ingot.serial");
+
+        Specification<Transfer> spec = SpecificationBuilder.buildSpecification(pageableRequest);
+
+        Specification<Transfer> counterSpec = (root, query, cb) -> {
+
+            Subquery<String> sub = query.subquery(String.class);
+            Root<User> userRoot = sub.from(User.class);
+
+            sub.select(userRoot.get("mobileNumber"))
+                    .where(cb.equal(userRoot.get("role"), Role.COUNTER));
+
+            return root.get("buyerMobileNumber").in(sub);
+        };
+        spec = (spec == null) ? counterSpec : spec.and(counterSpec);
+
+        Pageable pageable = PageRequest.of(
+                pageableRequest.getPage(),
+                pageableRequest.getSize(),
+                pageableRequest.getSort()
+        );
+
+        Page<Transfer> transferPage = transferRepository.findAll(spec, pageable);
+
+        List<IngotDtos.TransferDto> transferDtos = transferPage.getContent()
+                .stream()
+                .map(transfer -> IngotDtos.TransferDto.from(transfer, null))
+                .toList();
+
+        return new PageableResponse<>(
+                transferDtos,
+                transferPage.getTotalElements(),
+                transferPage.getNumber(),
+                transferPage.getSize()
+        );
+    }
+
 }

@@ -1,8 +1,18 @@
 package com.zarnab.panel.dashboard.controller;
 
+import com.zarnab.panel.auth.model.User;
+import com.zarnab.panel.core.annotations.PageableParam;
+import com.zarnab.panel.core.dto.req.PageableRequest;
+import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.dashboard.dto.DashboardResponse;
 import com.zarnab.panel.dashboard.service.DashboardService;
+import com.zarnab.panel.ingot.dto.IngotDtos;
+import com.zarnab.panel.ingot.service.TransferService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,9 +23,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final TransferService transferService;
 
-    @GetMapping
+    @GetMapping("/states")
     public DashboardResponse getDashboardData() {
         return dashboardService.getDashboardData();
+    }
+
+    @Operation(summary = "List transfers with pagination, filtering, and sorting")
+    @GetMapping("/transfers-to-counter")
+    public ResponseEntity<PageableResponse<IngotDtos.TransferDto>> getTransfers(
+            @AuthenticationPrincipal User user,
+            @PageableParam @ParameterObject PageableRequest pageableRequest) {
+        return ResponseEntity.ok(transferService.getCounterTransfers(user, pageableRequest));
     }
 }

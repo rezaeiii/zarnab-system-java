@@ -13,4 +13,12 @@ public class DashboardResponse {
     private double assetWeightInCustomers;
     private long totalTransfers;
     private long transfersLastMonth;
+
+    private Long fullCoinCount;
+    private Long halfCoinCount;
+    private Long quarterCoinCount;
+    private Long grammyCoinCount;
+
+    private Double totalGoldBarWeight;
+    private Double totalSilverBarWeight;
 }

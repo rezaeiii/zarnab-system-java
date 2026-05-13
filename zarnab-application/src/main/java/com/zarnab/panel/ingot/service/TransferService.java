@@ -28,4 +28,6 @@ public interface TransferService {
     void cancelTransfer(Long transferId, String username);
 
     PageableResponse<IngotDtos.TransferDto> getTransfers(User user, PageableRequest pageableRequest);
+
+    PageableResponse<IngotDtos.TransferDto> getCounterTransfers(User user, PageableRequest pageableRequest);
 }

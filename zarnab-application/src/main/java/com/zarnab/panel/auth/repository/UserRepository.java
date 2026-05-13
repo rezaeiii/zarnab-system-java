@@ -26,28 +26,84 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findByNationalIdOrMobileNumber(String mobileNumber, String nationalId);
 
     @Query("""
-            SELECT new com.zarnab.panel.dashboard.dto.DashboardStatsDto(
-                (SELECT count(u.id) FROM User u),
-                (SELECT count(u2.id) FROM User u2 WHERE u2.createdAt > :lastMonth),
-                (SELECT COALESCE(sum(i.weightGrams), 0.0) FROM Ingot i),
-                (SELECT COALESCE(sum(i2.weightGrams), 0.0) FROM Ingot i2 WHERE i2.owner IS NULL),
-                (SELECT count(t.id) FROM Transfer t),
-                (SELECT count(t2.id) FROM Transfer t2 WHERE t2.createdAt > :lastMonth)
-            )
-            """)
+        SELECT new com.zarnab.panel.dashboard.dto.DashboardStatsDto(
+            (SELECT count(u.id) FROM User u),
+            (SELECT count(u2.id) FROM User u2 WHERE u2.createdAt > :lastMonth),
+
+            (SELECT COALESCE(sum(i.weightGrams), 0.0) FROM Ingot i),
+
+            (SELECT COALESCE(sum(i2.weightGrams), 0.0)
+             FROM Ingot i2
+             WHERE i2.owner IS NULL),
+            (SELECT count(t.id) FROM Transfer t),
+            (SELECT count(t2.id)
+             FROM Transfer t2
+             WHERE t2.createdAt > :lastMonth),
+            (SELECT count(i3.id)
+             FROM Ingot i3
+             WHERE SUBSTRING(i3.serial,1,1) = 'Z'),
+            (SELECT count(i4.id)
+             FROM Ingot i4
+             WHERE SUBSTRING(i4.serial,1,1) = 'Y'),
+            (SELECT count(i5.id)
+             FROM Ingot i5
+             WHERE SUBSTRING(i5.serial,1,1) = 'X'),
+            (SELECT count(i6.id)
+             FROM Ingot i6
+             WHERE SUBSTRING(i6.serial,1,1) = 'W'),
+            (SELECT COALESCE(sum(i7.weightGrams), 0.0)
+             FROM Ingot i7
+             WHERE SUBSTRING(i7.serial,1,1) IN ('C','E','G','I','K','M','O','Q')),
+            (SELECT COALESCE(sum(i8.weightGrams), 0.0)
+             FROM Ingot i8
+             WHERE SUBSTRING(i8.serial,1,1) IN ('R','S','T','U'))
+        )
+        """)
     DashboardStatsDto getDashboardStats(@Param("lastMonth") LocalDateTime lastMonth);
 
     @Query("""
-            SELECT new com.zarnab.panel.dashboard.dto.DashboardStatsDto(
-                1L,
-                0L,
-                (SELECT COALESCE(sum(i.weightGrams), 0.0) FROM Ingot i WHERE i.owner = :user),
-                0.0,
-                (SELECT count(t.id) FROM Transfer t WHERE t.seller = :user OR t.buyer = :user),
-                (SELECT count(t2.id) FROM Transfer t2 WHERE (t2.seller = :user OR t2.buyer = :user) AND t2.createdAt > :lastMonth)
-            )
-            FROM User u WHERE u.id = :#{#user.id}
-            """)
+        SELECT new com.zarnab.panel.dashboard.dto.DashboardStatsDto(
+            1L,
+            0L,
+            (SELECT COALESCE(sum(i.weightGrams), 0.0)
+             FROM Ingot i
+             WHERE i.owner = :user),
+            0.0,
+            (SELECT count(t.id)
+             FROM Transfer t
+             WHERE t.seller = :user OR t.buyer = :user),
+            (SELECT count(t2.id)
+             FROM Transfer t2
+             WHERE (t2.seller = :user OR t2.buyer = :user)
+             AND t2.createdAt > :lastMonth),
+            (SELECT count(i3.id)
+             FROM Ingot i3
+             WHERE i3.owner = :user
+             AND SUBSTRING(i3.serial,1,1) = 'Z'),
+            (SELECT count(i4.id)
+             FROM Ingot i4
+             WHERE i4.owner = :user
+             AND SUBSTRING(i4.serial,1,1) = 'Y'),
+            (SELECT count(i5.id)
+             FROM Ingot i5
+             WHERE i5.owner = :user
+             AND SUBSTRING(i5.serial,1,1) = 'X'),
+            (SELECT count(i6.id)
+             FROM Ingot i6
+             WHERE i6.owner = :user
+             AND SUBSTRING(i6.serial,1,1) = 'W'),
+            (SELECT COALESCE(sum(i7.weightGrams), 0.0)
+             FROM Ingot i7
+             WHERE i7.owner = :user
+             AND SUBSTRING(i7.serial,1,1) IN ('C','E','G','I','K','M','O','Q')),
+            (SELECT COALESCE(sum(i8.weightGrams), 0.0)
+             FROM Ingot i8
+             WHERE i8.owner = :user
+             AND SUBSTRING(i8.serial,1,1) IN ('R','S','T','U'))
+        )
+        FROM User u
+        WHERE u.id = :userId
+    """)
     DashboardStatsDto getCustomerDashboardStats(@Param("user") User user, @Param("lastMonth") LocalDateTime lastMonth);
 
 }

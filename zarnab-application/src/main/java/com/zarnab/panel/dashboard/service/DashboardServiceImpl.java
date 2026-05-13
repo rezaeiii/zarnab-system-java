@@ -50,6 +50,16 @@ public class DashboardServiceImpl implements DashboardService {
                 .assetWeightInCustomers(assetWeightInCustomers)
                 .totalTransfers(stats.getTotalTransfers())
                 .transfersLastMonth(stats.getTransfersLastMonth())
+
+                // Coins
+                .fullCoinCount(stats.getFullCoinCount())
+                .halfCoinCount(stats.getHalfCoinCount())
+                .quarterCoinCount(stats.getQuarterCoinCount())
+                .grammyCoinCount(stats.getGrammyCoinCount())
+
+                // Bars
+                .totalGoldBarWeight(stats.getTotalGoldBarWeight())
+                .totalSilverBarWeight(stats.getTotalSilverBarWeight())
                 .build();
     }
 }
