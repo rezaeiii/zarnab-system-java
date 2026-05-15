@@ -20,7 +20,7 @@ public enum Purity {
      * 999 Karat
      * (عیار 999)
      */
-    P999("C", "عیار 999");
+    P999("C", "عیار 999.9");
 
     private final String code;
     private final String friendlyName;

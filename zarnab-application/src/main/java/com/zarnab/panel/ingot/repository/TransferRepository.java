@@ -1,5 +1,6 @@
 package com.zarnab.panel.ingot.repository;
 
+import com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto;
 import com.zarnab.panel.ingot.model.Transfer;
 import com.zarnab.panel.ingot.model.TransferStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,4 +32,22 @@ public interface TransferRepository extends JpaRepository<Transfer, Long>, JpaSp
                                                    @Param("statuses") List<TransferStatus> statues);
 
     boolean existsByIngotId(Long id);
+
+    @Query("""
+        SELECT new com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto(
+            YEAR(t.createdAt), MONTH(t.createdAt), SUM(i.weightGrams)
+        )
+        FROM Transfer t
+        JOIN t.ingot i
+        JOIN t.seller s
+        JOIN s.roles sr
+        JOIN t.buyer b
+        JOIN b.roles br
+        WHERE sr = 'COUNTER'
+          AND br = 'CUSTOMER'
+          AND t.status = 'COMPLETED'
+        GROUP BY YEAR(t.createdAt), MONTH(t.createdAt)
+        ORDER BY YEAR(t.createdAt) DESC, MONTH(t.createdAt) DESC
+    """)
+    List<MonthlyWeightTransferDto> getMonthlyWeightTransferredFromCounterToUser();
 }

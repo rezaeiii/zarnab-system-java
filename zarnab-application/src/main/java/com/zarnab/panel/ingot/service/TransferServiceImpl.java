@@ -15,6 +15,7 @@ import com.zarnab.panel.core.entity.BaseEntity;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.dto.IngotDtos;
+import com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto;
 import com.zarnab.panel.ingot.dto.req.*;
 import com.zarnab.panel.ingot.dto.res.InitiateQuickTransferResponse;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
@@ -26,6 +27,7 @@ import com.zarnab.panel.ingot.model.TransferStatus;
 import com.zarnab.panel.ingot.repository.IngotRepository;
 import com.zarnab.panel.ingot.repository.ReportIssueRepository;
 import com.zarnab.panel.ingot.repository.TransferRepository;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -405,9 +408,10 @@ public class TransferServiceImpl implements TransferService {
 
             Subquery<String> sub = query.subquery(String.class);
             Root<User> userRoot = sub.from(User.class);
+            Join<User, Role> rolesJoin = userRoot.join("roles");
 
             sub.select(userRoot.get("mobileNumber"))
-                    .where(cb.equal(userRoot.get("role"), Role.COUNTER));
+                    .where(cb.equal(rolesJoin, Role.COUNTER));
 
             return root.get("buyerMobileNumber").in(sub);
         };
@@ -432,6 +436,16 @@ public class TransferServiceImpl implements TransferService {
                 transferPage.getNumber(),
                 transferPage.getSize()
         );
+    }
+
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<MonthlyWeightTransferDto> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException {
+        if (!RoleUtil.hasRole(user, Role.ADMIN)) {
+            throw new AccessDeniedException("Only admins can access this data");
+        }
+        return transferRepository.getMonthlyWeightTransferredFromCounterToUser();
     }
 
 }

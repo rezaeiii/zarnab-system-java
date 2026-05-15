@@ -7,6 +7,7 @@ import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.dashboard.dto.DashboardResponse;
 import com.zarnab.panel.dashboard.service.DashboardService;
 import com.zarnab.panel.ingot.dto.IngotDtos;
+import com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto;
 import com.zarnab.panel.ingot.service.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.nio.file.AccessDeniedException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -36,5 +40,12 @@ public class DashboardController {
             @AuthenticationPrincipal User user,
             @PageableParam @ParameterObject PageableRequest pageableRequest) {
         return ResponseEntity.ok(transferService.getCounterTransfers(user, pageableRequest));
+    }
+
+    @Operation(summary = "Get total ingot weight transferred from COUNTER to USER grouped by month")
+    @GetMapping("/transfers/counter-to-user-weights")
+    public ResponseEntity<List<MonthlyWeightTransferDto>> getCounterToUserMonthlyWeights(
+            @AuthenticationPrincipal User user) throws AccessDeniedException {
+        return ResponseEntity.ok(transferService.getMonthlyCounterToUserTransfers(user));
     }
 }

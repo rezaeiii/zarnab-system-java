@@ -110,9 +110,9 @@ public class IngotDtos {
             User seller = transfer.getSeller();
             User buyer = transfer.getBuyer();
             boolean admin = RoleUtil.hasRole(user, Role.ADMIN);
-            var buyerIsYou = (transfer.getBuyerMobileNumber() != null && transfer.getBuyerMobileNumber().equals(user.getMobileNumber()))
-                             || (admin && buyer == null);
-            var sellerIsYou = (admin && seller == null) || (seller != null && seller.getId().equals(user.getId()));
+            var buyerIsYou = user != null && ((transfer.getBuyerMobileNumber() != null && transfer.getBuyerMobileNumber().equals(user.getMobileNumber()))
+                                              || (admin && buyer == null));
+            var sellerIsYou = user != null && ((admin && seller == null) || (seller != null && seller.getId().equals(user.getId())));
             return new TransferDto(
                     transfer.getId(),
                     IngotResponse.from(transfer.getIngot()),
