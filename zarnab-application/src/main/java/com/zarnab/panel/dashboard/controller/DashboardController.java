@@ -8,6 +8,7 @@ import com.zarnab.panel.dashboard.dto.DashboardResponse;
 import com.zarnab.panel.dashboard.service.DashboardService;
 import com.zarnab.panel.ingot.dto.IngotDtos;
 import com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto;
+import com.zarnab.panel.ingot.dto.res.IngotPurityStatsDto;
 import com.zarnab.panel.ingot.service.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class DashboardController {
     }
 
     @Operation(summary = "List transfers with pagination, filtering, and sorting")
-    @GetMapping("/transfers-to-counter")
+    @GetMapping("/transfers/to-counter")
     public ResponseEntity<PageableResponse<IngotDtos.TransferDto>> getTransfers(
             @AuthenticationPrincipal User user,
             @PageableParam @ParameterObject PageableRequest pageableRequest) {
@@ -47,5 +48,11 @@ public class DashboardController {
     public ResponseEntity<List<MonthlyWeightTransferDto>> getCounterToUserMonthlyWeights(
             @AuthenticationPrincipal User user) throws AccessDeniedException {
         return ResponseEntity.ok(transferService.getMonthlyCounterToUserTransfers(user));
+    }
+
+    @Operation(summary = "Get ingots grouped by purity")
+    @GetMapping("/ingots/by-purity")
+    public ResponseEntity<List<IngotPurityStatsDto>> getIngotsByPurity() {
+        return ResponseEntity.ok(dashboardService.getIngotsByPurity());
     }
 }

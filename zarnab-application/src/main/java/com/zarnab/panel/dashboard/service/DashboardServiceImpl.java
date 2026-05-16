@@ -6,17 +6,21 @@ import com.zarnab.panel.auth.repository.UserRepository;
 import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.dashboard.dto.DashboardResponse;
 import com.zarnab.panel.dashboard.dto.DashboardStatsDto;
+import com.zarnab.panel.ingot.dto.res.IngotPurityStatsDto;
+import com.zarnab.panel.ingot.repository.IngotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
     private final UserRepository userRepository;
+    private final IngotRepository ingotRepository;
 
     @Override
     public DashboardResponse getDashboardData() {
@@ -61,5 +65,24 @@ public class DashboardServiceImpl implements DashboardService {
                 .totalGoldBarWeight(stats.getTotalGoldBarWeight())
                 .totalSilverBarWeight(stats.getTotalSilverBarWeight())
                 .build();
+    }
+
+
+    @Override
+    public List<IngotPurityStatsDto> getIngotsByPurity() {
+
+        User currentUser = (User) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        boolean isAdminOrCounter =
+                RoleUtil.hasRole(currentUser, Role.ADMIN, Role.COUNTER);
+
+        if (isAdminOrCounter) {
+            return ingotRepository.getIngotsGroupedByPurity();
+        }
+
+        return ingotRepository.getIngotsGroupedByPurityForUser(currentUser);
     }
 }
