@@ -27,8 +27,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     @Query("""
         SELECT new com.zarnab.panel.dashboard.dto.DashboardStatsDto(
-            (SELECT count(u.id) FROM User u),
-            (SELECT count(u2.id) FROM User u2 WHERE u2.createdAt > :lastMonth),
+            (SELECT count(u.id) FROM User u join u.roles r where r = "CUSTOMER"),
+            (SELECT count(u2.id) FROM User u2 join u2.roles r where r = "CUSTOMER" AND u2.createdAt > :lastMonth),
 
             (SELECT COALESCE(sum(i.weightGrams), 0.0) FROM Ingot i),
 

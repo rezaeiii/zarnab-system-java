@@ -52,7 +52,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         return DashboardResponse.builder()
                 .totalCustomers(stats.getTotalCustomers())
-                .newCustomersLastMonth((stats.getTotalCustomers().floatValue() / stats.getNewCustomersLastMonth()))
+                .newCustomersLastMonth(calculatePercentage(stats.getTotalCustomers(),stats.getNewCustomersLastMonth()))
                 .totalAssetWeight(totalAssetWeight)
                 .assetWeightInZarnab(assetWeightInZarnab)
                 .assetPriceInZarnab(assetWeightInZarnab * goldPrice)
@@ -60,7 +60,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .totalTransfers(stats.getTotalTransfersFromToCustomerOrCounter())
                 .totalTransfersInput(stats.getTotalTransfersInput())
                 .totalTransfersOutput(stats.getTotalTransfersOutput())
-                .transfersLastMonth(stats.getTotalTransfersFromToCustomerOrCounter().floatValue() / stats.getTransfersLastMonth())
+                .transfersLastMonth(calculatePercentage(stats.getTotalTransfersFromToCustomerOrCounter(),stats.getTransfersLastMonth()))
 
                 // Coins
                 .fullCoinCount(stats.getFullCoinCount())
@@ -91,5 +91,10 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         return ingotRepository.getIngotsGroupedByPurityForUser(currentUser);
+    }
+    private double calculatePercentage(Long total, Long lastMonth) {
+        if (lastMonth == null || lastMonth == 0) return 0.0;
+        double result = (double) total / lastMonth;
+        return Math.round(result * 10.0) / 10.0;
     }
 }
