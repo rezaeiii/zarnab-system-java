@@ -52,7 +52,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         return DashboardResponse.builder()
                 .totalCustomers(stats.getTotalCustomers())
-                .newCustomersLastMonth(calculatePercentage(stats.getTotalCustomers(),stats.getNewCustomersLastMonth()))
+                .newCustomersLastMonth(calculatePercentage(stats.getTotalCustomers(), stats.getNewCustomersLastMonth()))
                 .totalAssetWeight(totalAssetWeight)
                 .assetWeightInZarnab(assetWeightInZarnab)
                 .assetPriceInZarnab(assetWeightInZarnab * goldPrice)
@@ -60,7 +60,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .totalTransfers(stats.getTotalTransfersFromToCustomerOrCounter())
                 .totalTransfersInput(stats.getTotalTransfersInput())
                 .totalTransfersOutput(stats.getTotalTransfersOutput())
-                .transfersLastMonth(calculatePercentage(stats.getTotalTransfersFromToCustomerOrCounter(),stats.getTransfersLastMonth()))
+                .transfersLastMonth(calculatePercentage(stats.getTotalTransfersFromToCustomerOrCounter(), stats.getTransfersLastMonth()))
 
                 // Coins
                 .fullCoinCount(stats.getFullCoinCount())
@@ -87,11 +87,15 @@ public class DashboardServiceImpl implements DashboardService {
                 RoleUtil.hasRole(currentUser, Role.ADMIN, Role.COUNTER);
 
         if (isAdminOrCounter) {
-            return ingotRepository.getIngotsGroupedByPurity();
+            return ingotRepository.getIngotsGroupedByPurity()
+                    .stream()
+                    .peek(item -> item.setTotalPrice(goldPrice * item.getTotalWeight()))
+                    .toList();
         }
 
         return ingotRepository.getIngotsGroupedByPurityForUser(currentUser);
     }
+
     private double calculatePercentage(Long total, Long lastMonth) {
         if (lastMonth == null || lastMonth == 0) return 0.0;
         double result = (double) total / lastMonth;

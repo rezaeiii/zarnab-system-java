@@ -39,9 +39,9 @@ public interface IngotRepository extends JpaRepository<Ingot, Long>, JpaSpecific
 
     @Query("""
        SELECT
-           i.karat as karat,
-           SUM(i.weightGrams) as totalWeight,
-           COUNT(i.id) as count
+           new com.zarnab.panel.ingot.dto.res.IngotPurityStatsDto(i.karat,
+           SUM(i.weightGrams),
+           COUNT(i.id))
        FROM Ingot i
        WHERE i.state = 'ASSIGNED'
        GROUP BY i.karat
