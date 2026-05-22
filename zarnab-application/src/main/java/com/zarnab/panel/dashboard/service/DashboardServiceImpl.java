@@ -9,6 +9,7 @@ import com.zarnab.panel.dashboard.dto.DashboardStatsDto;
 import com.zarnab.panel.ingot.dto.res.IngotPurityStatsDto;
 import com.zarnab.panel.ingot.repository.IngotRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,9 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final UserRepository userRepository;
     private final IngotRepository ingotRepository;
+
+    @Value("${zarnab.gold-price}")
+    private long goldPrice;
 
     @Override
     public DashboardResponse getDashboardData() {
@@ -48,12 +52,15 @@ public class DashboardServiceImpl implements DashboardService {
 
         return DashboardResponse.builder()
                 .totalCustomers(stats.getTotalCustomers())
-                .newCustomersLastMonth(stats.getNewCustomersLastMonth())
+                .newCustomersLastMonth((stats.getTotalCustomers().floatValue() / stats.getNewCustomersLastMonth()))
                 .totalAssetWeight(totalAssetWeight)
                 .assetWeightInZarnab(assetWeightInZarnab)
+                .assetPriceInZarnab(assetWeightInZarnab * goldPrice)
                 .assetWeightInCustomers(assetWeightInCustomers)
-                .totalTransfers(stats.getTotalTransfers())
-                .transfersLastMonth(stats.getTransfersLastMonth())
+                .totalTransfers(stats.getTotalTransfersFromToCustomerOrCounter())
+                .totalTransfersInput(stats.getTotalTransfersInput())
+                .totalTransfersOutput(stats.getTotalTransfersOutput())
+                .transfersLastMonth(stats.getTotalTransfersFromToCustomerOrCounter().floatValue() / stats.getTransfersLastMonth())
 
                 // Coins
                 .fullCoinCount(stats.getFullCoinCount())

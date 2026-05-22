@@ -12,7 +12,9 @@ public class DashboardStatsDto {
     private Long newCustomersLastMonth;
     private Double totalAssetWeight;
     private Double assetWeightInZarnab;
-    private Long totalTransfers;
+    private Long totalTransfersFromToCustomerOrCounter;
+    private Long totalTransfersInput;
+    private Long totalTransfersOutput;
     private Long transfersLastMonth;
 
     // Coins

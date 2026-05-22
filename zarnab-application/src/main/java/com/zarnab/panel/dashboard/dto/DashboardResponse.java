@@ -7,12 +7,15 @@ import lombok.Data;
 @Builder
 public class DashboardResponse {
     private long totalCustomers;
-    private long newCustomersLastMonth;
+    private double newCustomersLastMonth;
     private double totalAssetWeight;
     private double assetWeightInZarnab;
     private double assetWeightInCustomers;
-    private long totalTransfers;
-    private long transfersLastMonth;
+    private double assetPriceInZarnab;
+    private Long totalTransfers;
+    private Long totalTransfersInput;
+    private Long totalTransfersOutput;
+    private double transfersLastMonth;
 
     private Long fullCoinCount;
     private Long halfCoinCount;

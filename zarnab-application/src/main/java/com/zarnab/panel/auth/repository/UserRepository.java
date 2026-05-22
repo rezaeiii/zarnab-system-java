@@ -35,10 +35,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             (SELECT COALESCE(sum(i2.weightGrams), 0.0)
              FROM Ingot i2
              WHERE i2.owner IS NULL),
-            (SELECT count(t.id) FROM Transfer t),
+            (SELECT count(t.id) FROM Transfer t JOIN t.buyer.roles br JOIN t.seller.roles sr Where (br = "COUNTER" and sr = "CUSTOMER") or br = "CUSTOMER" ),
+            (SELECT count(t.id) FROM Transfer t JOIN t.buyer.roles br JOIN t.seller.roles sr Where (br = "COUNTER" and sr = "CUSTOMER") ),
+            (SELECT count(t.id) FROM Transfer t JOIN t.buyer.roles br JOIN t.seller.roles sr Where br = "CUSTOMER" ),
             (SELECT count(t2.id)
-             FROM Transfer t2
-             WHERE t2.createdAt > :lastMonth),
+             FROM Transfer t2 JOIN t2.buyer.roles br JOIN t2.seller.roles sr
+             WHERE t2.createdAt > :lastMonth and (br = "COUNTER" and sr = "CUSTOMER") or br = "CUSTOMER"),
             (SELECT count(i3.id)
              FROM Ingot i3
              WHERE SUBSTRING(i3.serial,1,1) = 'Z'),
@@ -72,6 +74,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             (SELECT count(t.id)
              FROM Transfer t
              WHERE t.seller = :user OR t.buyer = :user),
+            (SELECT count(t.id)
+             FROM Transfer t
+             WHERE t.buyer = :user),
+            (SELECT count(t.id)
+             FROM Transfer t
+             WHERE t.seller = :user),
             (SELECT count(t2.id)
              FROM Transfer t2
              WHERE (t2.seller = :user OR t2.buyer = :user)

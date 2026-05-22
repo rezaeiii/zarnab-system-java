@@ -4,7 +4,7 @@ import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.ingot.dto.IngotDtos;
-import com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto;
+import com.zarnab.panel.ingot.dto.MonthlyWeight;
 import com.zarnab.panel.ingot.dto.req.*;
 import com.zarnab.panel.ingot.dto.res.InitiateQuickTransferResponse;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
@@ -34,5 +34,5 @@ public interface TransferService {
 
     PageableResponse<IngotDtos.TransferDto> getCounterTransfers(User user, PageableRequest pageableRequest);
 
-    List<MonthlyWeightTransferDto> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException;
+    List<MonthlyWeight> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException;
 }

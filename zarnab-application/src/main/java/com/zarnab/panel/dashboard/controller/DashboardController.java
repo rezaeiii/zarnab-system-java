@@ -7,7 +7,7 @@ import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.dashboard.dto.DashboardResponse;
 import com.zarnab.panel.dashboard.service.DashboardService;
 import com.zarnab.panel.ingot.dto.IngotDtos;
-import com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto;
+import com.zarnab.panel.ingot.dto.MonthlyWeight;
 import com.zarnab.panel.ingot.dto.res.IngotPurityStatsDto;
 import com.zarnab.panel.ingot.service.TransferService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +45,7 @@ public class DashboardController {
 
     @Operation(summary = "Get total ingot weight transferred from COUNTER to USER grouped by month")
     @GetMapping("/transfers/counter-to-user-weights")
-    public ResponseEntity<List<MonthlyWeightTransferDto>> getCounterToUserMonthlyWeights(
+    public ResponseEntity<List<MonthlyWeight>> getCounterToUserMonthlyWeights(
             @AuthenticationPrincipal User user) throws AccessDeniedException {
         return ResponseEntity.ok(transferService.getMonthlyCounterToUserTransfers(user));
     }

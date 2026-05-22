@@ -15,7 +15,7 @@ import com.zarnab.panel.core.entity.BaseEntity;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.dto.IngotDtos;
-import com.zarnab.panel.ingot.dto.MonthlyWeightTransferDto;
+import com.zarnab.panel.ingot.dto.MonthlyWeight;
 import com.zarnab.panel.ingot.dto.req.*;
 import com.zarnab.panel.ingot.dto.res.InitiateQuickTransferResponse;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
@@ -31,6 +31,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,9 +40,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.zarnab.panel.common.translate.Translator.translate;
@@ -56,6 +59,9 @@ public class TransferServiceImpl implements TransferService {
     private final ReportIssueRepository reportIssueRepository;
     private final OtpService otpService;
     private final SmsService smsService;
+
+    @Value("${zarnab.gold-price}")
+    private long goldPrice;
 
     @Override
     @Transactional
@@ -441,11 +447,23 @@ public class TransferServiceImpl implements TransferService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<MonthlyWeightTransferDto> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException {
+    public List<MonthlyWeight> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException {
         if (!RoleUtil.hasRole(user, Role.ADMIN)) {
             throw new AccessDeniedException("Only admins can access this data");
         }
-        return transferRepository.getMonthlyWeightTransferredFromCounterToUser();
+        AtomicReference<Double> runningWeight = new AtomicReference<>(0.0);
+        return transferRepository.getMonthlyAssigned()
+                .stream()
+                .sorted(Comparator.comparing(MonthlyWeight::getDate))
+                .peek(item -> {
+                    double currentCumulative = runningWeight.accumulateAndGet(
+                            item.getTotalWeight(),
+                            Double::sum
+                    );
+                    item.setTotalWeight(currentCumulative);
+                    item.setTotalPrice(currentCumulative * goldPrice);
+                })
+                .toList();
     }
 
 }
