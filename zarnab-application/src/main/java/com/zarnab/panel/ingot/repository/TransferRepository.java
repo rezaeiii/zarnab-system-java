@@ -1,6 +1,6 @@
 package com.zarnab.panel.ingot.repository;
 
-import com.zarnab.panel.ingot.dto.MonthlyWeight;
+import com.zarnab.panel.ingot.dto.MonthlyWeightDashboard;
 import com.zarnab.panel.ingot.model.Transfer;
 import com.zarnab.panel.ingot.model.TransferStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,7 +34,7 @@ public interface TransferRepository extends JpaRepository<Transfer, Long>, JpaSp
     boolean existsByIngotId(Long id);
 
     @Query("""
-        SELECT new com.zarnab.panel.ingot.dto.MonthlyWeight(
+        SELECT new com.zarnab.panel.ingot.dto.MonthlyWeightDashboard(
             YEAR(t.createdAt), MONTH(t.createdAt), SUM(i.weightGrams)
         )
         FROM Transfer t
@@ -49,10 +49,10 @@ public interface TransferRepository extends JpaRepository<Transfer, Long>, JpaSp
         GROUP BY YEAR(t.createdAt), MONTH(t.createdAt)
         ORDER BY YEAR(t.createdAt) DESC, MONTH(t.createdAt) DESC
     """)
-    List<MonthlyWeight> getMonthlyWeightTransferredFromCounterToUser();
+    List<MonthlyWeightDashboard> getMonthlyWeightTransferredFromCounterToUser();
 
     @Query("""
-        SELECT new com.zarnab.panel.ingot.dto.MonthlyWeight(
+        SELECT new com.zarnab.panel.ingot.dto.MonthlyWeightDashboard(
             YEAR(i.manufactureDate), MONTH(i.manufactureDate), SUM(i.weightGrams)
         )
         FROM Ingot i
@@ -60,5 +60,5 @@ public interface TransferRepository extends JpaRepository<Transfer, Long>, JpaSp
         GROUP BY YEAR(i.manufactureDate), MONTH(i.manufactureDate)
         ORDER BY YEAR(i.manufactureDate) ASC, MONTH(i.manufactureDate) ASC
     """)
-    List<MonthlyWeight> getMonthlyAssigned();
+    List<MonthlyWeightDashboard> getMonthlyAssigned();
 }

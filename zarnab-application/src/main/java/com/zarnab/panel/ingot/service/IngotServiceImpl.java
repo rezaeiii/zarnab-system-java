@@ -249,6 +249,7 @@ public class IngotServiceImpl implements IngotService {
     @Override
     @Transactional(readOnly = true)
     public PageableResponse<IngotDtos.IngotBatchResponse> listBatches(PageableRequest pageableRequest) {
+        pageableRequest.addToAliases("serial", "ingots.serial");
         Specification<IngotBatch> spec = SpecificationBuilder.buildSpecification(pageableRequest);
         Pageable pageable = PageRequest.of(pageableRequest.getPage(), pageableRequest.getSize(), pageableRequest.getSort());
         Page<IngotBatch> ingotBatchPage = ingotBatchRepository.findAll(spec, pageable);

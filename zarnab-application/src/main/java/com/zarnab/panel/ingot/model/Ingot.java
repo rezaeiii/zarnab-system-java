@@ -9,6 +9,7 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Formula;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
@@ -81,6 +82,10 @@ public class Ingot extends BaseEntity {
            AND ri.status IN ('APPROVED', 'PENDING'))
     """)
 	private boolean isTampering;
+
+	public ProductType getProductType() {
+		return ProductType.fromCode(serial);
+	}
 
 //	@OneToMany(
 //			mappedBy = "ingot",

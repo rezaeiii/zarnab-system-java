@@ -69,6 +69,7 @@ public class IngotDtos {
 
     public record IngotBatchResponse(
             Long id,
+            String productType,
             @FriendlyDate(includeTime = false)
             LocalDate manufactureDate,
             int ingotCount,
@@ -77,6 +78,7 @@ public class IngotDtos {
         public static IngotBatchResponse from(IngotBatch batch) {
             return new IngotBatchResponse(
                     batch.getId(),
+                    batch.getIngots().getFirst().getProductType().getPersianName(),
                     batch.getCreatedAt().toLocalDate(),
                     batch.getIngotCount(),
                     batch.getLastFiveSerials() != null

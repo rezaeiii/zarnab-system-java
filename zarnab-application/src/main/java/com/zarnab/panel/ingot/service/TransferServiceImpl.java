@@ -15,7 +15,7 @@ import com.zarnab.panel.core.entity.BaseEntity;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.util.RoleUtil;
 import com.zarnab.panel.ingot.dto.IngotDtos;
-import com.zarnab.panel.ingot.dto.MonthlyWeight;
+import com.zarnab.panel.ingot.dto.MonthlyWeightDashboard;
 import com.zarnab.panel.ingot.dto.req.*;
 import com.zarnab.panel.ingot.dto.res.InitiateQuickTransferResponse;
 import com.zarnab.panel.ingot.dto.res.InitiateTransferResponse;
@@ -447,14 +447,14 @@ public class TransferServiceImpl implements TransferService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<MonthlyWeight> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException {
+    public List<MonthlyWeightDashboard> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException {
         if (!RoleUtil.hasRole(user, Role.ADMIN)) {
             throw new AccessDeniedException("Only admins can access this data");
         }
         AtomicReference<Double> runningWeight = new AtomicReference<>(0.0);
         return transferRepository.getMonthlyAssigned()
                 .stream()
-                .sorted(Comparator.comparing(MonthlyWeight::getDate))
+                .sorted(Comparator.comparing(MonthlyWeightDashboard::getDate))
                 .peek(item -> {
                     double currentCumulative = runningWeight.accumulateAndGet(
                             item.getTotalWeight(),

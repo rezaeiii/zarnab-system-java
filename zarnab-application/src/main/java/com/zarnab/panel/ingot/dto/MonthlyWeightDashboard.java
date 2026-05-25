@@ -11,7 +11,7 @@ import static com.zarnab.panel.common.translate.LanguageUtil.toPersianNumber;
 
 @Getter
 @Setter
-public class MonthlyWeight {
+public class MonthlyWeightDashboard {
 
     private final LocalDate date;
     private String jalaliDate;
@@ -20,7 +20,7 @@ public class MonthlyWeight {
     private Double totalWeight;
     private Double totalPrice;
 
-    public MonthlyWeight(int year, int month, Double totalWeight) {
+    public MonthlyWeightDashboard(int year, int month, Double totalWeight) {
         this.date = LocalDate.of(year, month, 1);
         this.jalaliDate = toPersianNumber(DateUtil.toJalali(date).substring(0, 7));
         this.monthName = DateUtil.getJalaliMonthName(Integer.parseInt(jalaliDate.substring(5, 7)));

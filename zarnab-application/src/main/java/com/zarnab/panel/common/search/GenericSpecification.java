@@ -17,6 +17,10 @@ public class GenericSpecification<T> implements Specification<T> {
 
     @Override
     public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+            query.distinct(true);
+        }
+
         Path<?> path = getPath(root, filter.getField());
 
         return switch (filter.getOperator()) {

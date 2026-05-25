@@ -30,11 +30,11 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
             (SELECT count(u.id) FROM User u join u.roles r where r = "CUSTOMER"),
             (SELECT count(u2.id) FROM User u2 join u2.roles r where r = "CUSTOMER" AND u2.createdAt > :lastMonth),
 
-            (SELECT COALESCE(sum(i.weightGrams), 0.0) FROM Ingot i),
+            (SELECT COALESCE(sum(i.weightGrams), 0.0) FROM Ingot i WHERE i.state = "ASSIGNED"),
 
             (SELECT COALESCE(sum(i2.weightGrams), 0.0)
-             FROM Ingot i2
-             WHERE i2.owner IS NULL),
+             FROM Ingot i2 JOIN i2.owner o join o.roles r
+             WHERE r = "CUSTOMER"),
             (SELECT count(t.id) FROM Transfer t JOIN t.buyer.roles br JOIN t.seller.roles sr Where (br = "COUNTER" and sr = "CUSTOMER") or br = "CUSTOMER" ),
             (SELECT count(t.id) FROM Transfer t JOIN t.buyer.roles br JOIN t.seller.roles sr Where (br = "COUNTER" and sr = "CUSTOMER") ),
             (SELECT count(t.id) FROM Transfer t JOIN t.buyer.roles br JOIN t.seller.roles sr Where br = "CUSTOMER" ),
@@ -43,22 +43,22 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
              WHERE t2.createdAt > :lastMonth and (br = "COUNTER" and sr = "CUSTOMER") or br = "CUSTOMER"),
             (SELECT count(i3.id)
              FROM Ingot i3
-             WHERE SUBSTRING(i3.serial,1,1) = 'Z'),
+             WHERE SUBSTRING(i3.serial,1,1) = 'Z' and i3.state = "ASSIGNED"),
             (SELECT count(i4.id)
              FROM Ingot i4
-             WHERE SUBSTRING(i4.serial,1,1) = 'Y'),
+             WHERE SUBSTRING(i4.serial,1,1) = 'Y' and i4.state = "ASSIGNED"),
             (SELECT count(i5.id)
              FROM Ingot i5
-             WHERE SUBSTRING(i5.serial,1,1) = 'X'),
+             WHERE SUBSTRING(i5.serial,1,1) = 'X' and i5.state = "ASSIGNED"),
             (SELECT count(i6.id)
              FROM Ingot i6
-             WHERE SUBSTRING(i6.serial,1,1) = 'W'),
+             WHERE SUBSTRING(i6.serial,1,1) = 'W' and i6.state = "ASSIGNED"),
             (SELECT COALESCE(sum(i7.weightGrams), 0.0)
              FROM Ingot i7
-             WHERE SUBSTRING(i7.serial,1,1) IN ('C','E','G','I','K','M','O','Q')),
+             WHERE SUBSTRING(i7.serial,1,1) IN ('C','E','G','I','K','M','O','Q') and i7.state = "ASSIGNED"),
             (SELECT COALESCE(sum(i8.weightGrams), 0.0)
              FROM Ingot i8
-             WHERE SUBSTRING(i8.serial,1,1) IN ('R','S','T','U'))
+             WHERE SUBSTRING(i8.serial,1,1) IN ('R','S','T','U') and i8.state = "ASSIGNED")
         )
         """)
     DashboardStatsDto getDashboardStats(@Param("lastMonth") LocalDateTime lastMonth);
