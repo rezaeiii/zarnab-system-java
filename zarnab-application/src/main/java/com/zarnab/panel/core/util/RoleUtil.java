@@ -7,6 +7,13 @@ import java.util.stream.Stream;
 
 public class RoleUtil {
 
+    public static boolean hasActiveRole(User user, Role... roles) {
+        if (user == null || user.getActiveRole() == null) {
+            return false;
+        }
+        return Stream.of(roles).anyMatch(rr -> rr.equals(user.getActiveRole()));
+    }
+
     public static boolean hasRole(User user, Role... roles) {
         if (user == null || user.getRoles() == null) {
             return false;

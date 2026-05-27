@@ -50,4 +50,7 @@ public class User extends BaseEntity {
     @Embedded
     private LegalPersonProfileEmbeddable legalPersonProfile;
 
+    @Transient
+    private Role activeRole;
+
 }

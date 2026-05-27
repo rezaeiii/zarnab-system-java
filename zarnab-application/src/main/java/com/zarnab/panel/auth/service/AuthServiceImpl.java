@@ -301,14 +301,14 @@ public class AuthServiceImpl implements AuthService {
 
     private Role getDefaultRole(User user) {
         Role role = Role.CUSTOMER;
-        if (RoleUtil.hasActiveRole(user, Role.ADMIN)) {
+        if (RoleUtil.hasRole(user, Role.ADMIN)) {
             role = Role.ADMIN;
-        } else if (RoleUtil.hasActiveRole(user, Role.COUNTER)) {
+        } else if (RoleUtil.hasRole(user, Role.COUNTER)) {
             role = Role.COUNTER;
-        } else if (RoleUtil.hasActiveRole(user, Role.REPRESENTATIVE)) {
+        } else if (RoleUtil.hasRole(user, Role.REPRESENTATIVE)) {
             role = Role.REPRESENTATIVE;
         } else {
-            RoleUtil.hasActiveRole(user, Role.CUSTOMER);
+            RoleUtil.hasRole(user, Role.CUSTOMER);
         }
         return role;
     }

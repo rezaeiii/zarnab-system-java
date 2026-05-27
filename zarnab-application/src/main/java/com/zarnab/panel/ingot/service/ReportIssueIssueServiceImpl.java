@@ -67,7 +67,7 @@ public class ReportIssueIssueServiceImpl implements ReportIssueService {
 
         Specification<ReportIssue> spec = SpecificationBuilder.buildSpecification(pageableRequest);
 
-        boolean isAdmin = RoleUtil.hasRole(user, Role.ADMIN);
+        boolean isAdmin = RoleUtil.hasActiveRole(user, Role.ADMIN);
         if (!isAdmin) {
             Specification<ReportIssue> userSecuritySpec = (root, query, criteriaBuilder) ->
                     criteriaBuilder.equal(root.get("reporter"), user);
