@@ -1,6 +1,8 @@
 package com.zarnab.panel.auth.controller;
 
 import com.zarnab.panel.auth.dto.LoginResult;
+import com.zarnab.panel.auth.dto.PageDto;
+import com.zarnab.panel.auth.dto.SwitchRoleResult;
 import com.zarnab.panel.auth.dto.VerifyOtpResult;
 import com.zarnab.panel.auth.dto.req.InitiateLoginRequest;
 import com.zarnab.panel.auth.dto.req.RegisterRequest;
@@ -10,6 +12,7 @@ import com.zarnab.panel.auth.dto.res.MeResponse;
 import com.zarnab.panel.auth.dto.res.VerifyOtpResponse;
 import com.zarnab.panel.auth.model.User;
 import com.zarnab.panel.auth.service.AuthService;
+import com.zarnab.panel.auth.service.PageRoleService;
 import com.zarnab.panel.auth.service.otp.OtpPurpose;
 import com.zarnab.panel.auth.service.otp.OtpService;
 import com.zarnab.panel.auth.util.CookieHelper;
@@ -25,6 +28,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.AccessDeniedException;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Web layer entry point for user authentication and registration flows.
  * This controller is responsible for handling HTTP requests, delegating to the AuthService,
@@ -39,6 +46,7 @@ public class AuthController {
     private final AuthService authService;
     private final OtpService otpService;
     private final CookieHelper cookieHelper;
+    private final PageRoleService pageRoleService;
 
     /**
      * Step 1: Initiates the login/registration process by sending an OTP.
@@ -106,6 +114,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<MeResponse> me(@AuthenticationPrincipal User user) {
         User fullUser = authService.loadUserProfile(user.getId());
+        fullUser.setActiveRole(user.getActiveRole());
         return ResponseEntity.ok(MeResponse.from(fullUser));
     }
 
@@ -120,6 +129,21 @@ public class AuthController {
                 .headers(cookieHeader)
                 .body(new LoginResponse(loginResult.accessToken()));
     }
+
+    @PostMapping("/switch-role")
+    public ResponseEntity<SwitchRoleResult> switchRole(
+            @AuthenticationPrincipal User user,
+            @RequestBody Map<String, String> requestBody) throws AccessDeniedException {
+
+        String newRole = requestBody.get("newRole");
+        LoginResult result = authService.switchUserRole(user, newRole.toUpperCase());
+        List<PageDto> pages = pageRoleService.getPages();
+        HttpHeaders cookieHeader = cookieHelper.createRefreshTokenCookie(result.refreshToken());
+        return ResponseEntity.ok()
+                .headers(cookieHeader)
+                .body(new SwitchRoleResult(result.accessToken(), result.refreshToken(), user, pages));
+    }
+
 
     /**
      * Logs the user out by clearing the refresh token cookie.

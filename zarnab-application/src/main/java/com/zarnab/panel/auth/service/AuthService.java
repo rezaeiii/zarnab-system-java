@@ -10,7 +10,7 @@ import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.nio.file.AccessDeniedException;
 
 /**
  * Main application service for handling the user authentication and registration business logic.
@@ -37,4 +37,6 @@ public interface AuthService {
     UserManagementDtos.UserResponse updateUser(Long userId, UserManagementDtos.UpdateUserRequest request);
 
     void deleteUser(Long userId);
+
+    LoginResult switchUserRole(User user, String newRole) throws AccessDeniedException;
 }

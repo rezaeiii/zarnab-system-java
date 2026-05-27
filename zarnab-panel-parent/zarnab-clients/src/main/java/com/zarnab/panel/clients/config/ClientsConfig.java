@@ -12,6 +12,7 @@ public record ClientsConfig(
         Uid uid,
         Sms sms,
         MeliPayamakSmsConfig meliPayamak,
+        Kavenegar kavenegar,
         Retry retry) {
 
     public record Uid(
@@ -34,6 +35,12 @@ public record ClientsConfig(
             @NotBlank String username,
             @NotBlank String password,
             @NotBlank String from,
+            @Positive int timeoutMs) {
+    }
+
+    public record Kavenegar(
+            @NotBlank String apiKey,
+            @NotNull Long lineNumber,
             @Positive int timeoutMs) {
     }
 

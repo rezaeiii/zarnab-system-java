@@ -19,6 +19,7 @@ import com.zarnab.panel.core.dto.req.PageableRequest;
 import com.zarnab.panel.core.dto.res.PageableResponse;
 import com.zarnab.panel.core.exception.ExceptionType;
 import com.zarnab.panel.core.security.JwtService;
+import com.zarnab.panel.core.util.RoleUtil;
 import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -130,8 +132,10 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Missing refresh token");
         }
         String mobileNumber;
+        String activeRole;
         try {
             mobileNumber = jwtService.extractMobileNumber(refreshToken);
+            activeRole = jwtService.extractActiveRole(refreshToken);
         } catch (Exception ex) {
             throw new BadCredentialsException("Invalid refresh token");
         }
@@ -143,7 +147,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Expired or invalid refresh token");
         }
 
-        return createLoginResult(user);
+        return createLoginResult(user, Role.valueOf(activeRole));
     }
 
     @Override
@@ -263,11 +267,50 @@ public class AuthServiceImpl implements AuthService {
         userRepository.deleteById(userId);
     }
 
+    @Override
+    public LoginResult switchUserRole(User user, String newRole) throws AccessDeniedException {
+        boolean hasRole = user.getRoles().stream()
+                .anyMatch(r -> r.name().equalsIgnoreCase(newRole));
+
+        Role role;
+        try {
+            role = Role.valueOf(newRole.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AccessDeniedException("Invalid input role");
+        }
+
+        if (!hasRole) {
+            throw new AccessDeniedException("You do not have permission for this role");
+        }
+
+        return createLoginResult(user, role);
+    }
+
+
+    private LoginResult createLoginResult(User user, Role activeRole) {
+        String accessToken = jwtService.generateAccessToken(user, activeRole);
+        String refreshToken = jwtService.generateRefreshToken(user, activeRole);
+        user.setActiveRole(activeRole);
+        return new LoginResult(accessToken, refreshToken, user);
+    }
 
     private LoginResult createLoginResult(User user) {
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        return new LoginResult(accessToken, refreshToken, user);
+        Role defaultRole = getDefaultRole(user);
+        return createLoginResult(user, defaultRole);
+    }
+
+    private Role getDefaultRole(User user) {
+        Role role = Role.CUSTOMER;
+        if (RoleUtil.hasActiveRole(user, Role.ADMIN)) {
+            role = Role.ADMIN;
+        } else if (RoleUtil.hasActiveRole(user, Role.COUNTER)) {
+            role = Role.COUNTER;
+        } else if (RoleUtil.hasActiveRole(user, Role.REPRESENTATIVE)) {
+            role = Role.REPRESENTATIVE;
+        } else {
+            RoleUtil.hasActiveRole(user, Role.CUSTOMER);
+        }
+        return role;
     }
 
     private String createRegistrationToken(String mobileNumber) {

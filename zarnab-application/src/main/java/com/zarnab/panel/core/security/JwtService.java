@@ -1,4 +1,6 @@
 package com.zarnab.panel.core.security;
+
+import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -39,19 +41,26 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public String extractActiveRole(String token) {
+        return extractClaim(token, claims -> claims.get("activeRole", String.class));
+    }
+
     public boolean isTokenValid(String token, User user) {
         final String mobileNumber = extractMobileNumber(token);
         return (mobileNumber.equals(user.getMobileNumber())) && !isTokenExpired(token);
     }
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(User user, Role activeRole) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", user.getRoles().stream().map(Enum::name).collect(Collectors.toList()));
+        claims.put("activeRole", activeRole);
         return buildToken(claims, user.getMobileNumber(), accessTokenExpiration);
     }
 
-    public String generateRefreshToken(User user) {
-        return buildToken(new HashMap<>(), user.getMobileNumber(), refreshTokenExpiration);
+    public String generateRefreshToken(User user, Role activeRole) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("activeRole", activeRole.name());
+        return buildToken(extraClaims, user.getMobileNumber(), refreshTokenExpiration);
     }
 
 
