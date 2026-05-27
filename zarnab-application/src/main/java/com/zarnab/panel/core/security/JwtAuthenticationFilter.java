@@ -1,5 +1,6 @@
 package com.zarnab.panel.core.security;
 
+import com.zarnab.panel.auth.model.Role;
 import com.zarnab.panel.auth.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -48,11 +49,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Extract the token from the header (e.g., "Bearer eyJhbGciOiJIUzI1NiJ9...")
         final String jwt = authHeader.substring(7);
         final String mobileNumber = jwtService.extractMobileNumber(jwt);
+        String activeRoleString = jwtService.extractActiveRole(jwt);
 
         // If a mobile number is extracted and the user is not already authenticated
         if (mobileNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Load the user from the database via our port
             userRepository.findByMobileNumber(mobileNumber).ifPresent(user -> {
+
+                user.setActiveRole(Role.valueOf(activeRoleString));
+
                 // If the user is found, validate the token
                 if (jwtService.isTokenValid(jwt, user)) {
                     // Create an authentication token and set it in the security context

@@ -26,6 +26,8 @@ public record MeResponse(
         @Schema(description = "Assigned roles")
         Set<Role> roles,
 
+        Role activeRole,
+
         @Schema(description = "Profile type for the user")
         UserProfileType profileType,
 
@@ -58,6 +60,7 @@ public record MeResponse(
                 user.getMobileNumber(),
                 user.isEnabled(),
                 user.getRoles(),
+                user.getActiveRole(),
                 user.getProfileType(),
                 profile != null ? profile.getFirstName() : null,
                 profile != null ? profile.getLastName() : null,

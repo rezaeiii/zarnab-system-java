@@ -172,7 +172,7 @@ public class TransferServiceImpl implements TransferService {
         Optional<User> buyerOptional = userRepository.findByMobileNumber(request.getReceiverMobileNumber());
         boolean toCustomer = request.getTo() == InitiateTransferRequest.TransferTarget.CUSTOMER;
         boolean toZarnab = request.getTo() == InitiateTransferRequest.TransferTarget.ZARNAB;
-        if (toCustomer || (!toZarnab && (buyerOptional.isEmpty() || RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER)))) {
+        if (toCustomer || (!toZarnab && (buyerOptional.isEmpty() || RoleUtil.hasActiveRole(buyerOptional.get(), Role.CUSTOMER)))) {
             if (request.getReceiverMobileNumber() != null)
                 smsService.sendSms(request.getReceiverMobileNumber(), translate("transfer.receiver.receiveIngotNotification", transfer.getIngot().getSerial()));
             transfers.forEach(t -> {
@@ -238,7 +238,7 @@ public class TransferServiceImpl implements TransferService {
         transfer.setBuyerMobileNumber(request.getReceiverMobileNumber());
 
         Optional<User> buyerOptional = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber());
-        if (buyerOptional.isEmpty() || RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER)) {
+        if (buyerOptional.isEmpty() || RoleUtil.hasActiveRole(buyerOptional.get(), Role.CUSTOMER)) {
             transfer.setStatus(TransferStatus.PENDING_RECEIVER_VERIFICATION);
             smsService.sendSms(request.getReceiverMobileNumber(), translate("transfer.receiver.receiveIngotNotification", transfer.getIngot().getSerial()));
             transferRepository.save(transfer);
@@ -286,8 +286,8 @@ public class TransferServiceImpl implements TransferService {
     }
 
     private void validateTransfer(User seller, String buyerMobileNumber, List<Ingot> ingots, InitiateTransferRequest.TransferTarget to) {
-        boolean sellerIsAdmin = RoleUtil.hasRole(seller, Role.ADMIN);
-        boolean sellerIsCounter = RoleUtil.hasRole(seller, Role.COUNTER);
+        boolean sellerIsAdmin = RoleUtil.hasActiveRole(seller, Role.ADMIN);
+        boolean sellerIsCounter = RoleUtil.hasActiveRole(seller, Role.COUNTER);
         boolean sellerIsCustomer = !sellerIsAdmin && !sellerIsCounter;
 
         User buyer = null;
@@ -313,11 +313,11 @@ public class TransferServiceImpl implements TransferService {
             var buyerOptional = userRepository.findByMobileNumber(buyerMobileNumber);
 //                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
-            if (to == InitiateTransferRequest.TransferTarget.COUNTER && (buyerOptional.isEmpty() || !(RoleUtil.hasRole(buyerOptional.get(), Role.COUNTER)))) {
+            if (to == InitiateTransferRequest.TransferTarget.COUNTER && (buyerOptional.isEmpty() || !(RoleUtil.hasActiveRole(buyerOptional.get(), Role.COUNTER)))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
 
-            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && buyerOptional.isPresent() && !(RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER))) {
+            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && buyerOptional.isPresent() && !(RoleUtil.hasActiveRole(buyerOptional.get(), Role.CUSTOMER))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
             buyer = buyerOptional.orElse(null);
@@ -372,7 +372,7 @@ public class TransferServiceImpl implements TransferService {
 
         Specification<Transfer> spec = SpecificationBuilder.buildSpecification(pageableRequest);
 
-        boolean isAdminOrCounter = RoleUtil.hasRole(user, Role.ADMIN, Role.COUNTER);
+        boolean isAdminOrCounter = RoleUtil.hasActiveRole(user, Role.ADMIN, Role.COUNTER);
         if (!isAdminOrCounter) {
             Specification<Transfer> userSecuritySpec = (root, query, criteriaBuilder) ->
                     criteriaBuilder.or(
@@ -403,7 +403,7 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public PageableResponse<IngotDtos.TransferDto> getCounterTransfers(User user, PageableRequest pageableRequest) {
 
-        if (!RoleUtil.hasRole(user, Role.ADMIN)) {
+        if (!RoleUtil.hasActiveRole(user, Role.ADMIN)) {
             return null;
         }
         pageableRequest.addToAliases("serial", "ingot.serial");
@@ -448,7 +448,7 @@ public class TransferServiceImpl implements TransferService {
     @Transactional(readOnly = true)
     @Override
     public List<MonthlyWeightDashboard> getMonthlyCounterToUserTransfers(User user) throws AccessDeniedException {
-        if (!RoleUtil.hasRole(user, Role.ADMIN)) {
+        if (!RoleUtil.hasActiveRole(user, Role.ADMIN)) {
             throw new AccessDeniedException("Only admins can access this data");
         }
         AtomicReference<Double> runningWeight = new AtomicReference<>(0.0);

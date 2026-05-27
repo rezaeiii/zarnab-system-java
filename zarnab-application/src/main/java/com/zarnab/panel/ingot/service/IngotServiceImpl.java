@@ -54,15 +54,15 @@ public class IngotServiceImpl implements IngotService {
 
         Specification<Ingot> spec = SpecificationBuilder.buildSpecification(pageableRequest);
 
-        if (RoleUtil.hasRole(requester, Role.CUSTOMER)) {
+        if (RoleUtil.hasActiveRole(requester, Role.CUSTOMER)) {
             Specification<Ingot> customerSpec = (root, query, cb) -> cb.equal(root.get("owner"), requester);
             spec = (spec == null) ? customerSpec : spec.and(customerSpec);
-        } else if (RoleUtil.hasRole(requester, Role.COUNTER)) {
+        } else if (RoleUtil.hasActiveRole(requester, Role.COUNTER)) {
             Specification<Ingot> counterSpec = (root, query, cb) -> cb.or(
                     cb.equal(root.get("owner"), requester)
             );
             spec = (spec == null) ? counterSpec : spec.and(counterSpec);
-        } else if (RoleUtil.hasRole(requester, Role.ADMIN)) {
+        } else if (RoleUtil.hasActiveRole(requester, Role.ADMIN)) {
             if (justZarnabOwners) {
                 Specification<Ingot> counterSpec = (root, query, cb) -> cb.or(
                         cb.isNull(root.get("owner"))

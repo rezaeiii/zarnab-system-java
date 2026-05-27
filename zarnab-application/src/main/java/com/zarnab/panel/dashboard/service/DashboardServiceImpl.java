@@ -32,7 +32,7 @@ public class DashboardServiceImpl implements DashboardService {
 
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        boolean isAdminOrCounter = RoleUtil.hasRole(currentUser, Role.ADMIN, Role.COUNTER);
+        boolean isAdminOrCounter = RoleUtil.hasActiveRole(currentUser, Role.ADMIN, Role.COUNTER);
 
         DashboardStatsDto stats;
         if (isAdminOrCounter) {
@@ -84,7 +84,7 @@ public class DashboardServiceImpl implements DashboardService {
                 .getPrincipal();
 
         boolean isAdminOrCounter =
-                RoleUtil.hasRole(currentUser, Role.ADMIN, Role.COUNTER);
+                RoleUtil.hasActiveRole(currentUser, Role.ADMIN, Role.COUNTER);
 
         if (isAdminOrCounter) {
             return ingotRepository.getIngotsGroupedByPurity()
