@@ -172,7 +172,7 @@ public class TransferServiceImpl implements TransferService {
         Optional<User> buyerOptional = userRepository.findByMobileNumber(request.getReceiverMobileNumber());
         boolean toCustomer = request.getTo() == InitiateTransferRequest.TransferTarget.CUSTOMER;
         boolean toZarnab = request.getTo() == InitiateTransferRequest.TransferTarget.ZARNAB;
-        if (toCustomer || (!toZarnab && (buyerOptional.isEmpty() || RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER)))) {
+        if (toCustomer || (!toZarnab && (buyerOptional.isEmpty() || RoleUtil.hasActiveRole(buyerOptional.get(), Role.CUSTOMER)))) {
             if (request.getReceiverMobileNumber() != null)
                 smsService.sendSms(request.getReceiverMobileNumber(), translate("transfer.receiver.receiveIngotNotification", transfer.getIngot().getSerial()));
             transfers.forEach(t -> {
@@ -238,7 +238,7 @@ public class TransferServiceImpl implements TransferService {
         transfer.setBuyerMobileNumber(request.getReceiverMobileNumber());
 
         Optional<User> buyerOptional = userRepository.findByMobileNumber(transfer.getBuyerMobileNumber());
-        if (buyerOptional.isEmpty() || RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER)) {
+        if (buyerOptional.isEmpty() || RoleUtil.hasActiveRole(buyerOptional.get(), Role.CUSTOMER)) {
             transfer.setStatus(TransferStatus.PENDING_RECEIVER_VERIFICATION);
             smsService.sendSms(request.getReceiverMobileNumber(), translate("transfer.receiver.receiveIngotNotification", transfer.getIngot().getSerial()));
             transferRepository.save(transfer);
@@ -313,11 +313,11 @@ public class TransferServiceImpl implements TransferService {
             var buyerOptional = userRepository.findByMobileNumber(buyerMobileNumber);
 //                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
-            if (to == InitiateTransferRequest.TransferTarget.COUNTER && (buyerOptional.isEmpty() || !(RoleUtil.hasRole(buyerOptional.get(), Role.COUNTER)))) {
+            if (to == InitiateTransferRequest.TransferTarget.COUNTER && (buyerOptional.isEmpty() || !(RoleUtil.hasActiveRole(buyerOptional.get(), Role.COUNTER)))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
 
-            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && buyerOptional.isPresent() && !(RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER))) {
+            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && buyerOptional.isPresent() && !(RoleUtil.hasActiveRole(buyerOptional.get(), Role.CUSTOMER))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
             buyer = buyerOptional.orElse(null);
