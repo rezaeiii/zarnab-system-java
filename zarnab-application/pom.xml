@@ -16,6 +16,15 @@
         <jib.build.skip>false</jib.build.skip>
     </properties>
 
+
+<!--    TODO ARMAN UNCOMMENT FOR KAVENEGAR-->
+<!--    <repositories>-->
+<!--        <repository>-->
+<!--            <id>jitpack.io</id>-->
+<!--            <url>https://jitpack.io</url>-->
+<!--        </repository>-->
+<!--    </repositories>-->
+
     <dependencies>
         <!-- Internal Module Dependencies -->
         <dependency>
@@ -133,6 +142,17 @@
             <artifactId>zarnab-clients</artifactId>
         </dependency>
 
+<!--   TODO AMRMAN UNCOMMENT FOR KAVENEGAR     -->
+<!--        <dependency>-->
+<!--            <groupId>com.github.kavenegar</groupId>-->
+<!--            <artifactId>kavenegar-java</artifactId>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>com.zarnab.panel</groupId>-->
+<!--            <artifactId>kavenegar</artifactId>-->
+<!--            <version>0.0.1-SNAPSHOT</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

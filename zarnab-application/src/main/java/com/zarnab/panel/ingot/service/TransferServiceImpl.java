@@ -313,11 +313,11 @@ public class TransferServiceImpl implements TransferService {
             var buyerOptional = userRepository.findByMobileNumber(buyerMobileNumber);
 //                    .orElseThrow(() -> new ZarnabException(ExceptionType.USER_NOT_FOUND));
 
-            if (to == InitiateTransferRequest.TransferTarget.COUNTER && (buyerOptional.isEmpty() || !(RoleUtil.hasActiveRole(buyerOptional.get(), Role.COUNTER)))) {
+            if (to == InitiateTransferRequest.TransferTarget.COUNTER && (buyerOptional.isEmpty() || !(RoleUtil.hasRole(buyerOptional.get(), Role.COUNTER)))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
 
-            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && buyerOptional.isPresent() && !(RoleUtil.hasActiveRole(buyerOptional.get(), Role.CUSTOMER))) {
+            if (to == InitiateTransferRequest.TransferTarget.CUSTOMER && buyerOptional.isPresent() && !(RoleUtil.hasRole(buyerOptional.get(), Role.CUSTOMER))) {
                 throw new ZarnabException(ExceptionType.INVALID_TRANSFER_BUYER);
             }
             buyer = buyerOptional.orElse(null);

@@ -35,6 +35,7 @@
         <jib.version>3.4.1</jib.version>
         <jib.build.skip>true</jib.build.skip>
         <minio.version>8.5.17</minio.version>
+        <kavenegar.version>v2.0.3</kavenegar.version>
     </properties>
 
     <dependencyManagement>
@@ -125,8 +126,16 @@
                 <version>${bardframework.version}</version>
             </dependency>
 
+<!--            <dependency>-->
+<!--                <groupId>com.github.kavenegar</groupId>-->
+<!--                <artifactId>kavenegar-java</artifactId>-->
+<!--                <version>${kavenegar.version}</version>-->
+<!--            </dependency>-->
+
         </dependencies>
     </dependencyManagement>
+
+
 
     <build>
         <pluginManagement>
