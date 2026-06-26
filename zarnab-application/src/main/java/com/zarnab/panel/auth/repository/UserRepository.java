@@ -110,7 +110,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
              AND SUBSTRING(i8.serial,1,1) IN ('R','S','T','U'))
         )
         FROM User u
-        WHERE u.id = :userId
+        WHERE u = :user
     """)
     DashboardStatsDto getCustomerDashboardStats(@Param("user") User user, @Param("lastMonth") LocalDateTime lastMonth);
 
